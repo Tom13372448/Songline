@@ -15,8 +15,19 @@
   <div class="logo">SONGLINE</div>
   <div class="header-right">
     <div class="lang-switch" role="group" data-i18n-title="header.lang">
-      <button class="lang-btn" data-lang="de" onclick="setLang('de')">DE</button>
-      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" data-lang="de" onclick="setLang('de')" title="Deutsch" aria-label="Deutsch">
+        <svg class="flag" viewBox="0 0 5 3" aria-hidden="true"><rect width="5" height="1" fill="#000"/><rect y="1" width="5" height="1" fill="#DD0000"/><rect y="2" width="5" height="1" fill="#FFCE00"/></svg>
+      </button>
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')" title="English" aria-label="English">
+        <svg class="flag" viewBox="0 0 60 30" aria-hidden="true">
+          <clipPath id="uk-clip"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath>
+          <rect width="60" height="30" fill="#012169"/>
+          <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+          <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#uk-clip)" stroke="#C8102E" stroke-width="4"/>
+          <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
+          <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/>
+        </svg>
+      </button>
     </div>
     <button class="icon-btn" id="sound-toggle" onclick="toggleSound()" data-i18n-title="header.sound">🔊</button>
     <div class="spotify-badge" id="spotify-status" style="display:none">

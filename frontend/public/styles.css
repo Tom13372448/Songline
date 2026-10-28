@@ -1428,19 +1428,26 @@ body.tv-mode header { display: none; }
   padding: 2px;
 }
 .lang-btn {
+  display: flex;
+  align-items: center;
   background: none;
   border: none;
-  color: var(--muted);
-  font-family: inherit;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  padding: 5px 9px;
+  padding: 5px 7px;
   border-radius: 50px;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.2s;
 }
-.lang-btn.active { background: var(--accent-grad); color: var(--on-accent); }
+.lang-btn .flag {
+  width: 22px; height: 14px;
+  border-radius: 3px;
+  display: block;
+  opacity: 0.4;
+  filter: grayscale(0.6);
+  transition: opacity 0.2s, filter 0.2s, transform 0.2s;
+}
+.lang-btn:hover .flag { opacity: 0.8; filter: none; }
+.lang-btn.active { background: var(--accent-grad); }
+.lang-btn.active .flag { opacity: 1; filter: none; box-shadow: 0 0 0 1px rgba(255,255,255,0.6); }
 @media (max-width: 480px) {
   header { padding: 14px 16px; }
   .header-right { gap: 8px; }
