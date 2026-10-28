@@ -52,8 +52,8 @@ Everyone plays in the browser on their phone, tablet or laptop. Only the host ne
 
 ### 2. Get the code and run the setup
 ```bash
-git clone https://github.com/<your-username>/songline.git
-cd songline
+git clone https://github.com/Tom13372448/Songline.git
+cd Songline
 ./setup.sh
 ```
 The script detects your IP address, asks for the Spotify credentials, creates the `.env` file and a self-signed HTTPS certificate, and starts the containers.
