@@ -997,7 +997,10 @@ app.get('/api/playlist-info', async (req, res) => {
 
 // ─── Serve Frontend ───────────────────────────────────────────────────────────
 
-app.use(express.static(path.join(__dirname, '../frontend/public')));
+// Always revalidate HTML/JS/CSS so phones never mix an old app.js with a new index.html after an update
+app.use(express.static(path.join(__dirname, '../frontend/public'), {
+  setHeaders: res => res.setHeader('Cache-Control', 'no-cache'),
+}));
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, '../frontend/public/index.html')));
 
 // ─── Start ────────────────────────────────────────────────────────────────────
