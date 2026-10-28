@@ -12,7 +12,7 @@ function startTv(code) {
   document.getElementById('tv-qr').src = `/api/qr?text=${encodeURIComponent(url)}`;
   document.getElementById('tv-code').textContent = code;
   document.getElementById('tv-url').textContent = `${location.host}/?join=${code}`;
-  document.getElementById('tv-status').textContent = 'Verbinde…';
+  document.getElementById('tv-status').textContent = L('tvv.connecting');
 
   socket.onAny((event, payload) => {
     if (event === 'lobby:error') { document.getElementById('tv-status').textContent = payload.message; return; }
@@ -36,10 +36,10 @@ function tvTimeline(lobby, unit, isCurrent) {
   const marker = i => {
     if (!showMarkers) return '';
     const items = [];
-    if (placed === i) items.push(`<div class="tv-marker">👉 ${esc(unit.name)}</div>`);
+    if (placed === i) items.push(`<div class="tv-marker">👉 ${esc(un(unit.name))}</div>`);
     if (turn?.phase === 'challenge') {
       turn.challenges.filter(c => c.slotIndex === i)
-        .forEach(c => items.push(`<div class="tv-marker hot">📣 ${esc(c.name)}</div>`));
+        .forEach(c => items.push(`<div class="tv-marker hot">📣 ${esc(un(c.name))}</div>`));
     }
     return items.join('');
   };
@@ -54,7 +54,7 @@ function tvTimeline(lobby, unit, isCurrent) {
       </div>`;
     }
   }
-  return html || '<div class="tv-empty">Noch keine Karten</div>';
+  return html || `<div class="tv-empty">${L('tvv.noCards')}</div>`;
 }
 
 function renderTv() {
@@ -65,11 +65,11 @@ function renderTv() {
 
   // status line
   let status;
-  if (tvVerdict?.ended) status = `🏆 <b>${esc(tvVerdict.ended.name)}</b> gewinnt!`;
-  else if (l.status !== 'playing') status = 'Scannt den QR-Code und spielt mit!';
-  else if (l.paused) status = '⏸ Pause – warte auf den Host…';
-  else if (l.turn?.phase === 'challenge') status = `<span class="tv-hot">SONGLINE!</span> Wer glaubt, ${esc(cur?.name)} liegt falsch? <span id="tv-countdown"></span>`;
-  else status = `Dran: <b style="color:${cur?.color || 'var(--accent)'}">${esc(cur?.name || '–')}</b>`
+  if (tvVerdict?.ended) status = L('tvv.wins', { name: esc(un(tvVerdict.ended.name)) });
+  else if (l.status !== 'playing') status = L('tvv.scan');
+  else if (l.paused) status = L('tvv.paused');
+  else if (l.turn?.phase === 'challenge') status = `${L('tvv.challenge', { name: esc(un(cur?.name)) })} <span id="tv-countdown"></span>`;
+  else status = `${L('tvv.turn')} <b style="color:${cur?.color || 'var(--accent)'}">${esc(un(cur?.name) || '–')}</b>`
     + (l.teamMode && cur ? ` <span class="tv-members">(${esc(cur.memberNames.join(', '))})</span>` : '');
   document.getElementById('tv-status').innerHTML = status;
 
@@ -78,11 +78,12 @@ function renderTv() {
   const v = tvVerdict && !tvVerdict.ended ? tvVerdict : null;
   if (v) {
     const t = v.track;
-    const result = v.stolenBy ? `📣 ${esc(v.stolenBy)} klaut die Karte!`
-      : v.correct ? `🎉 ${esc(v.currentPlayerName)} liegt richtig!`
-      : v.reason ? `😬 Fast, ${esc(v.currentPlayerName)}!`
-      : v.gaveUp ? `🏳️ ${esc(v.currentPlayerName)} hatte keine Ahnung`
-      : `💔 Leider falsch, ${esc(v.currentPlayerName)}`;
+    const who = esc(un(v.currentPlayerName));
+    const result = v.stolenBy ? L('tvv.stolen', { name: esc(un(v.stolenBy)) })
+      : v.correct ? L('tvv.correct', { name: who })
+      : v.reason ? L('tvv.almost', { name: who })
+      : v.gaveUp ? L('tvv.gaveUp', { name: who })
+      : L('tvv.wrong', { name: who });
     reveal.innerHTML = `
       <div class="tv-reveal-card">
         ${t.album?.images?.[0]?.url ? `<img src="${esc(t.album.images[0].url)}" alt="">` : '<div class="tv-reveal-ph">🎵</div>'}
@@ -94,7 +95,7 @@ function renderTv() {
         </div>
       </div>`;
   } else if (l.status === 'playing') {
-    reveal.innerHTML = '<div class="tv-playing"><span class="tv-eq"><i></i><i></i><i></i><i></i></span> Song läuft…</div>';
+    reveal.innerHTML = '<div class="tv-playing"><span class="tv-eq"><i></i><i></i><i></i><i></i></span> ' + L('tvv.playing') + '</div>';
   } else {
     reveal.innerHTML = '';
   }
@@ -106,13 +107,13 @@ function renderTv() {
     return `
       <div class="tv-unit ${isCurrent ? 'current' : ''}" style="${u.color ? `--team:${u.color}` : ''}">
         <div class="tv-unit-head">
-          <span class="tv-unit-name">${esc(u.name)}${u.connected ? '' : ' 💤'}</span>
+          <span class="tv-unit-name">${esc(un(u.name))}${u.connected ? '' : ' 💤'}</span>
           ${l.teamMode ? `<span class="tv-members">${esc(u.memberNames.join(', '))}</span>` : ''}
           <span class="tv-unit-score">${u.score}${classic ? ' 🃏' : ' P'}${classic ? ` · ${u.tokens} 🪙` : ''}</span>
         </div>
         ${classic && (l.status === 'playing' || tvVerdict?.ended) ? `<div class="tv-timeline">${tvTimeline(l, u, isCurrent)}</div>` : ''}
       </div>`;
-  }).join('') || '<div class="tv-empty">Noch niemand da – scannt den QR-Code!</div>';
+  }).join('') || `<div class="tv-empty">${L('tvv.empty')}</div>`;
 
   clearInterval(tvCountdown);
   if (l.turn?.phase === 'challenge' && l.turn.deadline) {
@@ -124,3 +125,5 @@ function renderTv() {
     tvCountdown = setInterval(tick, 500);
   }
 }
+
+onLangChange(() => { if (state.tv) renderTv(); });

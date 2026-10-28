@@ -100,7 +100,7 @@ test('Classic original: token, pass, skip, no idea, SONGLINE!', async () => {
   const info = wait(b, 'game:info');
   needs = wait(b, 'game:needs-track');
   b.emit('game:skip', { code });
-  assert.match((await info).message, /überspringt/);
+  assert.strictEqual((await info).key, 'info.skipToken');
   await needs;
   await selectTrack(g, track('3', 1970));
   ch = wait(b, 'game:challenge');
@@ -126,7 +126,7 @@ test('Classic original: token, pass, skip, no idea, SONGLINE!', async () => {
   await ch;
   const err = wait(a, 'lobby:error');
   a.emit('game:songline', { code, slotIndex: 0 });
-  assert.match((await err).message, /belegt/);
+  assert.strictEqual((await err).key, 'err.slotTaken');
   ch = wait(b, 'game:challenge');
   a.emit('game:songline', { code, slotIndex: 2 });
   await ch;
@@ -203,7 +203,7 @@ test('Late join: new player gets tokens and joins the turn order', async () => {
   const { lobby } = await wait(late, 'lobby:joined');
   assert.strictEqual(lobby.status, 'playing');
   assert.strictEqual(unit(lobby, 'Spät').tokens, 2);
-  assert.match((await info).message, /steigt ins Spiel ein/);
+  assert.strictEqual((await info).key, 'info.joined');
 });
 
 test('Active player leaves the game → next player is up', async () => {

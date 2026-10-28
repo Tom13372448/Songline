@@ -172,13 +172,13 @@ on('lobby:rejoin-failed', () => {
   store.del('session');
   if (state.lobby) {
     state.lobby = null;
-    showToast('Die Lobby gibt es nicht mehr');
+    showToast(L('t.lobbyGone'));
     showScreen('menu');
   }
 });
 
-on('lobby:error', ({ message }) => showToast(message));
-on('player:left', ({ playerName }) => showToast(`${playerName} hat die Lobby verlassen`));
+on('lobby:error', msg => showToast(serverText(msg)));
+on('player:left', ({ playerName }) => showToast(L('t.playerLeft', { name: playerName })));
 
 on('game:started', ({ lobby }) => {
   state.lobby = lobby;
@@ -224,7 +224,7 @@ on('game:needs-track', ({ lobby }) => {
   if (isHost()) openSearchModal();
   else {
     document.getElementById('waiting-banner').style.display = 'block';
-    document.getElementById('waiting-text').textContent = 'Host wählt den nächsten Song…';
+    document.getElementById('waiting-text').textContent = L('game.hostPicking');
   }
 });
 
@@ -234,7 +234,7 @@ on('game:slot-selected', ({ slotIndex }) => {
   renderTimeline();
   if (!isMyTurn()) {
     const cp = currentUnit();
-    document.getElementById('game-hint').textContent = `${cp?.name} überlegt: ${getSlotDescription(slotIndex)}`;
+    document.getElementById('game-hint').textContent = L('game.thinking', { name: un(cp?.name), slot: getSlotDescription(slotIndex) });
   }
   updateActionButtons();
 });
@@ -277,17 +277,17 @@ on('game:card-bought', ({ playerName, card, lobby }) => {
   renderScores(lobby);
   renderTimeline();
   updateActionButtons();
-  showToast(`🛒 ${playerName} kauft eine Karte: ${card.name} (${card.year})`);
+  showToast(L('t.cardBought', { name: un(playerName), song: card.name, year: card.year }));
 });
 
-on('game:info', ({ message }) => showToast(message));
+on('game:info', msg => showToast(serverText(msg)));
 
 on('game:paused', ({ paused, lobby }) => {
   if (handleWhileAway(lobby)) return;
   state.lobby = lobby;
   syncPause();
   updateChallengeUI();
-  if (!paused) showToast('Der Host ist zurück – weiter geht\'s!');
+  if (!paused) showToast(L('pause.back'));
 });
 on('spotify:refresh-needed', () => refreshAccessToken());
 
@@ -300,7 +300,7 @@ on('game:ended', ({ winner, lobby }) => {
   Effects.confetti(220);
 });
 
-on('game:error', ({ message }) => showToast(message));
+on('game:error', msg => showToast(serverText(msg)));
 
 on('game:back-to-lobby', () => {
   hideVerdict();
@@ -333,7 +333,7 @@ function syncPause() {
 function createLobby() {
   const nameInput = document.getElementById('home-name');
   const name = nameInput.value.trim();
-  if (!name) { showToast('Wie heißt du? Bitte Namen eingeben'); nameInput.focus(); return; }
+  if (!name) { showToast(L('t.enterName')); nameInput.focus(); return; }
   if (!state.accessToken) {
     // Go to Spotify first, the lobby is created automatically afterwards
     store.set('name', name);
@@ -350,12 +350,8 @@ function createLobby() {
 function syncMenu() {
   const loggedIn = !!state.accessToken;
   document.getElementById('spotify-status').style.display = loggedIn ? 'flex' : 'none';
-  document.getElementById('host-sub').textContent = loggedIn
-    ? 'Mit Spotify verbunden ✓ – Lobby erstellen'
-    : 'Mit Spotify Premium – du bestimmst die Musik';
-  document.getElementById('menu-account').innerHTML = loggedIn
-    ? 'Als Host bei Spotify angemeldet · <a href="#" onclick="logoutSpotify();return false">Abmelden</a>'
-    : 'Nur der Host braucht Spotify Premium – alle anderen spielen einfach mit.';
+  document.getElementById('host-sub').textContent = L(loggedIn ? 'menu.hostSubLoggedIn' : 'menu.hostSub');
+  document.getElementById('menu-account').innerHTML = L(loggedIn ? 'menu.footerLoggedIn' : 'menu.footer');
 }
 
 function logoutSpotify() {
@@ -363,7 +359,7 @@ function logoutSpotify() {
   state.refreshToken = null;
   store.del('spotify');
   syncMenu();
-  showToast('Von Spotify abgemeldet');
+  showToast(L('t.loggedOut'));
 }
 
 function openRules() { document.getElementById('rules-modal').classList.add('show'); }
@@ -372,8 +368,8 @@ function closeRules() { document.getElementById('rules-modal').classList.remove(
 function joinLobby() {
   const name = document.getElementById('home-name').value.trim();
   const code = document.getElementById('lobby-code-input').value.trim().toUpperCase();
-  if (!name) { showToast('Wie heißt du? Bitte Namen eingeben'); document.getElementById('home-name').focus(); return; }
-  if (code.length !== 4) { showToast('Bitte 4-stelligen Code eingeben'); return; }
+  if (!name) { showToast(L('t.enterName')); document.getElementById('home-name').focus(); return; }
+  if (code.length !== 4) { showToast(L('t.enterCode')); return; }
   state.myName = name;
   store.set('name', name);
   socket.emit('lobby:join', { code, playerName: name, playerKey });
@@ -383,12 +379,12 @@ async function shareLobby() {
   if (!state.lobby) return;
   const url = `${location.origin}/?join=${state.lobby.code}`;
   if (navigator.share) {
-    try { await navigator.share({ title: 'Songline', text: `Spiel mit! Lobby-Code: ${state.lobby.code}`, url }); return; }
+    try { await navigator.share({ title: 'Songline', text: L('t.shareText', { code: state.lobby.code }), url }); return; }
     catch(e) { if (e.name === 'AbortError') return; }
   }
   try {
     await navigator.clipboard.writeText(url);
-    showToast('Einladungslink kopiert');
+    showToast(L('t.linkCopied'));
   } catch(e) {
     showToast(url);
   }
@@ -427,23 +423,23 @@ async function castTv() {
     const request = new PresentationRequest([`${location.origin}/?tv=${state.lobby.code}`]);
     await request.start();
     closeTvDialog();
-    showToast('📡 TV-Ansicht wird übertragen');
+    showToast(L('t.casting'));
   } catch (e) {
     if (e.name === 'NotAllowedError' || e.name === 'AbortError') return; // cancelled
     showToast(e.name === 'NotFoundError'
-      ? 'Kein Gerät zum Streamen gefunden – nutze den TV-Code'
-      : 'Streamen hier nicht möglich – nutze den TV-Code');
+      ? L('t.castNoDevice')
+      : L('t.castFailed'));
   }
 }
 
 function linkTv() {
   const tvCode = document.getElementById('tv-pair-input').value.trim();
-  if (!/^\d{4}$/.test(tvCode)) { showToast('Bitte den 4-stelligen Code vom Fernseher eingeben'); return; }
+  if (!/^\d{4}$/.test(tvCode)) { showToast(L('t.tvCodeFormat')); return; }
   socket.emit('lobby:link-tv', { code: state.lobby.code, tvCode }, ({ ok }) => {
-    if (!ok) { showToast('Code nicht gefunden – steht er noch auf dem Fernseher?'); return; }
+    if (!ok) { showToast(L('t.tvCodeUnknown')); return; }
     document.getElementById('tv-pair-input').value = '';
     closeTvDialog();
-    showToast('📺 Fernseher verbunden');
+    showToast(L('t.tvLinked'));
   });
 }
 
@@ -462,8 +458,8 @@ socket.on('tv:linked', ({ code }) => {
 function leaveLobby() {
   if (state.lobby?.status === 'playing') {
     const msg = isHost() && state.lobby.players.length > 1
-      ? 'Spiel wirklich verlassen? Ohne dich als Host endet das Spiel für alle.'
-      : 'Spiel wirklich verlassen? Deine Punkte gehen verloren.';
+      ? L('t.confirmLeaveHost')
+      : L('t.confirmLeave');
     if (!confirm(msg)) return;
   }
   stopAudio();
@@ -495,7 +491,8 @@ function refreshLobby(lobby) {
     const cur = lobby.units.find(u => u.id === lobby.currentUnitId);
     const best = Math.max(0, ...lobby.units.map(u => u.score));
     document.getElementById('round-banner-sub').textContent =
-      `Runde ${lobby.round}${cur ? ` · ${cur.name} ist dran` : ''}${lobby.paused ? ' · Pause' : ''} · Bestwert ${best}/${lobby.winCards}`;
+      [L('lobby.bannerRound', { round: lobby.round }), cur && L('lobby.bannerTurn', { name: un(cur.name) }),
+       lobby.paused && L('lobby.bannerPause'), L('lobby.bannerBest', { best, win: lobby.winCards })].filter(Boolean).join(' · ');
   }
 }
 
@@ -503,7 +500,7 @@ function refreshLobby(lobby) {
 function leaveRound() {
   if (!state.lobby) return;
   if (state.lobby.status !== 'playing') { showLobbyScreen(state.lobby); return; }
-  if (!confirm('Zurück in die Lobby? Deine Punkte bleiben erhalten und du kannst jederzeit wieder einsteigen.')) return;
+  if (!confirm(L('t.confirmToLobby'))) return;
   // The host keeps playing the music – only the view changes
   if (!isHost()) stopAudio();
   hideVerdict();
@@ -514,7 +511,7 @@ function leaveRound() {
 function rejoinRound() {
   if (!state.lobby) return;
   socket.emit('game:sit-in', { code: state.lobby.code }, ({ ok, lobby }) => {
-    if (!ok) { showToast('Die Runde ist schon vorbei'); return; }
+    if (!ok) { showToast(L('t.roundOver')); return; }
     state.lobby = lobby;
     enterGame(lobby);
   });
@@ -523,8 +520,8 @@ function rejoinRound() {
 function closeLobby() {
   if (!state.lobby || !isHost()) return;
   const msg = state.lobby.status === 'playing'
-    ? 'Lobby wirklich schließen? Die laufende Runde endet für alle.'
-    : 'Lobby wirklich für alle schließen?';
+    ? L('t.confirmCloseRunning')
+    : L('t.confirmClose');
   if (!confirm(msg)) return;
   socket.emit('lobby:close', { code: state.lobby.code });
 }
@@ -541,13 +538,13 @@ on('lobby:closed', () => {
   closeTvDialog();
   document.getElementById('pause-overlay').classList.remove('show');
   showScreen('menu');
-  showToast(wasHost ? 'Lobby geschlossen' : '🚪 Der Host hat die Lobby geschlossen');
+  showToast(L(wasHost ? 't.lobbyClosed' : 't.lobbyClosedByHost'));
 });
 
 // "Play again!": same players, teams and settings – new round right away
 function rematch() {
   if (!state.lobby || !isHost()) return;
-  if (!state.accessToken) { showToast('Der Host muss mit Spotify angemeldet sein'); return; }
+  if (!state.accessToken) { showToast(L('t.hostNeedsSpotify')); return; }
   socket.emit('game:start', { code: state.lobby.code, token: state.accessToken, rematch: true });
 }
 
@@ -555,10 +552,10 @@ function playerRow(lobby, p) {
   return `
     <div class="lobby-player-row">
       <div class="player-avatar">${esc(p.name[0].toUpperCase())}</div>
-      <div class="player-name" style="flex:1${p.connected ? '' : ';opacity:0.45'}">${esc(p.name)}${p.connected ? '' : ' (offline)'}</div>
-      ${lobby.status === 'playing' ? `<span class="status-pill ${p.away ? 'away' : 'in'}">${p.away ? '⏸ Pause' : '🎮 spielt'}</span>` : ''}
-      ${p.id === lobby.hostId ? '<span class="badge">Host</span>' : ''}
-      ${p.id === state.myId ? '<span class="badge" style="background:var(--green);color:#000">Du</span>' : ''}
+      <div class="player-name" style="flex:1${p.connected ? '' : ';opacity:0.45'}">${esc(p.name)}${p.connected ? '' : ' ' + L('lobby.offline')}</div>
+      ${lobby.status === 'playing' ? `<span class="status-pill ${p.away ? 'away' : 'in'}">${L(p.away ? 'lobby.statusAway' : 'lobby.statusIn')}</span>` : ''}
+      ${p.id === lobby.hostId ? `<span class="badge">${L('lobby.host')}</span>` : ''}
+      ${p.id === state.myId ? `<span class="badge" style="background:var(--green);color:#000">${L('lobby.you')}</span>` : ''}
     </div>`;
 }
 
@@ -576,10 +573,10 @@ function renderLobbyPlayers(lobby) {
       <div class="team-block" style="--team:${team.color}">
         <div class="team-head" onclick="joinTeam('${team.id}')">
           <span class="team-dot"></span>
-          <span class="team-name">${esc(team.name)}</span>
-          <span class="team-join">${mine ? 'Dein Team' : 'Beitreten →'}</span>
+          <span class="team-name">${esc(un(team.name))}</span>
+          <span class="team-join">${L(mine ? 'lobby.yourTeam' : 'lobby.joinTeam')}</span>
         </div>
-        ${members.map(p => playerRow(lobby, p)).join('') || '<div class="team-empty">Noch niemand</div>'}
+        ${members.map(p => playerRow(lobby, p)).join('') || `<div class="team-empty">${L('lobby.nobody')}</div>`}
       </div>`;
   }).join('');
 }
@@ -592,19 +589,10 @@ function shuffleTeams() {
   if (state.lobby) socket.emit('lobby:shuffle-teams', { code: state.lobby.code });
 }
 
-const VARIANT_RULES = {
-  original: `<b>Original:</b> Jeder startet mit einer Karte und 2 🪙. Ordne den Song in deine Zeitlinie ein –
-    nennst du zusätzlich Titel <i>und</i> Interpret, gibt's 1 🪙 (max. 5).
-    Liegt jemand falsch, können die anderen für 1 🪙 <b>SONGLINE!</b> rufen und die Karte klauen.
-    1 🪙 = Song überspringen, 3 🪙 = Karte kaufen.`,
-  pro: `<b>Pro:</b> Wie Original, aber die Karte gibt's nur, wenn du zusätzlich Titel <i>und</i> Interpret richtig nennst.
-    Fürs Benennen gibt es keine Tokens.`,
-  expert: `<b>Experte:</b> Wie Pro – und zusätzlich musst du das exakte Erscheinungsjahr nennen.`,
-};
 
 function syncVariant(variant) {
   document.querySelectorAll('.variant-tab').forEach(el => el.classList.toggle('active', el.dataset.variant === variant));
-  document.getElementById('classic-rules').innerHTML = VARIANT_RULES[variant] || VARIANT_RULES.original;
+  document.getElementById('classic-rules').innerHTML = L(`variant.${['original', 'pro', 'expert'].includes(variant) ? variant : 'original'}Rules`);
 }
 
 function setVariant(variant) {
@@ -621,7 +609,7 @@ function syncTeamControls(lobby) {
 function syncModeHints(mode) {
   const classic = mode === 'classic';
   document.getElementById('classic-options').style.display = classic ? 'block' : 'none';
-  document.getElementById('win-cards-label').textContent = classic ? 'Karten zum Gewinnen (inkl. Startkarte)' : 'Punkte zum Gewinnen';
+  document.getElementById('win-cards-label').textContent = L(classic ? 'win.cards' : 'win.points');
 }
 
 function syncLobbySettings(lobby) {
@@ -685,7 +673,7 @@ async function loadPresetPacks() {
     renderPackGrid();
   } catch(e) {
     document.getElementById('pack-grid').innerHTML =
-      '<p class="text-muted" style="grid-column:1/-1;text-align:center;padding:12px">Play-Pakete konnten nicht geladen werden</p>';
+      `<p class="text-muted" style="grid-column:1/-1;text-align:center;padding:12px">${L('source.packsFailed')}</p>`;
   }
 }
 
@@ -698,7 +686,7 @@ function renderPackGrid() {
       ${p.cover ? `<img class="pack-cover" src="${p.cover}" alt="">` : `<div class="pack-cover-placeholder">${p.icon || '🎵'}</div>`}
       <div class="pack-info">
         <div class="pack-name">${p.icon ? p.icon + ' ' : ''}${p.spotifyName || p.name}</div>
-        <div class="pack-count">${p.trackCount != null ? p.trackCount + ' Songs' : ''}</div>
+        <div class="pack-count">${p.trackCount != null ? L('source.songs', { n: p.trackCount }) : ''}</div>
       </div>
     </div>
   `).join('');
@@ -724,7 +712,7 @@ function onCustomPlaylistInput() {
       previewEl.innerHTML = '';
       return;
     }
-    previewEl.innerHTML = '<p class="text-muted" style="padding:8px 0">Lade Playlist-Info…</p>';
+    previewEl.innerHTML = `<p class="text-muted" style="padding:8px 0">${L('source.loadingPlaylist')}</p>`;
     try {
       const res = await apiFetch(`/api/playlist-info?id=${id}&token=${state.accessToken}`);
       if (!res.ok) throw new Error('not found');
@@ -735,12 +723,12 @@ function onCustomPlaylistInput() {
           ${data.cover ? `<img src="${data.cover}" alt="">` : ''}
           <div>
             <div class="spb-name">${data.name}</div>
-            <div class="text-muted" style="font-size:0.75rem">${data.trackCount != null ? data.trackCount + ' Songs' : ''}</div>
+            <div class="text-muted" style="font-size:0.75rem">${data.trackCount != null ? L('source.songs', { n: data.trackCount }) : ''}</div>
           </div>
         </div>`;
     } catch(e) {
       customPlaylistPreview = null;
-      previewEl.innerHTML = '<p class="text-muted" style="padding:8px 0;color:var(--red)">Playlist nicht gefunden</p>';
+      previewEl.innerHTML = `<p class="text-muted" style="padding:8px 0;color:var(--red)">${L('source.playlistNotFound')}</p>`;
     }
     emitSettings();
   }, 500);
@@ -787,14 +775,14 @@ function emitSettings() {
 function startLobbyGame() {
   if (!state.lobby) return;
   if (!state.accessToken) {
-    showToast('Der Host muss mit Spotify angemeldet sein, um das Spiel zu starten.');
+    showToast(L('t.hostNeedsSpotifyStart'));
     return;
   }
   if (selectedSourceTab === 'preset' && !selectedPresetId) {
-    showToast('Bitte ein Play-Paket auswählen'); return;
+    showToast(L('t.choosePack')); return;
   }
   if (selectedSourceTab === 'playlist' && !document.getElementById('lobby-playlist-input').value.trim()) {
-    showToast('Bitte eine Playlist eingeben'); return;
+    showToast(L('t.enterPlaylist')); return;
   }
   emitSettings();
   setTimeout(() => {
@@ -835,11 +823,11 @@ function initSpotifySDK() {
     });
 
     spotifyPlayer.addListener('initialization_error', ({ message }) => {
-      showToast('Player-Fehler: ' + message);
+      showToast(L('t.playerError', { msg: message }));
     });
 
     spotifyPlayer.addListener('authentication_error', () => {
-      showToast('Spotify Premium wird für die Wiedergabe benötigt');
+      showToast(L('t.premiumRequired'));
     });
 
     spotifyPlayer.connect();
@@ -883,7 +871,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 function notifyMyTurn() {
-  showToast(state.lobby?.teamMode ? '🎯 Dein Team ist dran!' : '🎯 Du bist dran!');
+  showToast(L(state.lobby?.teamMode ? 'game.yourTeamTurn' : 'game.yourTurn'));
   Effects.sound('turn');
   if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
 }
@@ -897,8 +885,8 @@ function applyModeUI(gameMode) {
   document.getElementById('guess-section').style.display = isGuess ? 'block' : 'none';
   document.getElementById('guess-artist-wrap').style.display = gameMode === 'guess-hard' ? 'block' : 'none';
   document.getElementById('btn-guess').style.display = isGuess ? 'none' : 'block';
-  document.getElementById('btn-reveal').textContent = isGuess ? '🏳️ Aufgeben' : '🤷 Keine Ahnung';
-  document.getElementById('skip-button').textContent = isGuess ? '⏭ Song überspringen' : '⏭ Überspringen';
+  document.getElementById('btn-reveal').textContent = L(isGuess ? 'game.giveUp' : 'game.noIdea');
+  document.getElementById('skip-button').textContent = L(isGuess ? 'game.skipSong' : 'game.skip');
 }
 
 function renderGameState(lobby) {
@@ -906,12 +894,12 @@ function renderGameState(lobby) {
   if (!cp) return;
   const myTurn = isMyTurn();
 
-  const who = lobby.teamMode ? `${cp.name} (${cp.memberNames.join(', ')})` : cp.name;
-  document.getElementById('current-player-display').textContent = cp.name;
+  const who = lobby.teamMode ? `${un(cp.name)} (${cp.memberNames.join(', ')})` : cp.name;
+  document.getElementById('current-player-display').textContent = un(cp.name);
   document.getElementById('current-player-display').style.color = cp.color || '';
-  document.getElementById('round-display').textContent = `Runde ${lobby.round}`;
+  document.getElementById('round-display').textContent = L('game.round', { round: lobby.round });
   document.getElementById('waiting-banner').style.display = myTurn ? 'none' : 'block';
-  document.getElementById('waiting-text').textContent = `${who} ist dran…`;
+  document.getElementById('waiting-text').textContent = L('game.waitingFor', { name: who });
 
   // Controls: only active on my turn
   document.getElementById('guess-section').style.display =
@@ -925,8 +913,8 @@ function renderGameState(lobby) {
   document.getElementById('token-year').value = '';
   syncTokenGuess(lobby.variant);
   document.getElementById('timeline-label').textContent = myTurn
-    ? (lobby.teamMode ? 'Unsere Zeitlinie – Song hier einordnen' : 'Meine Zeitlinie – Song hier einordnen')
-    : `Zeitlinie von ${cp.name}`;
+    ? L(lobby.teamMode ? 'game.ourTimeline' : 'game.myTimeline')
+    : L('game.timelineOf', { name: un(cp.name) });
 
   document.getElementById('track-hidden').style.display = 'block';
   document.getElementById('track-revealed').classList.remove('show');
@@ -939,9 +927,9 @@ function renderGameState(lobby) {
   const isGuess = lobby.gameMode !== 'classic';
   document.getElementById('game-hint').textContent = myTurn
     ? (isGuess
-        ? (lobby.gameMode === 'guess-hard' ? 'Errate Titel und Interpret!' : 'Errate den Songtitel!')
-        : 'Wähle einen Platz auf deiner Zeitlinie aus')
-    : `Warten auf ${cp.name}…`;
+        ? L(lobby.gameMode === 'guess-hard' ? 'game.hintHard' : 'game.hintEasy')
+        : L('game.hintPlace'))
+    : L('game.waitFor', { name: un(cp.name) });
 
   renderScores(lobby);
   if (lobby.gameMode === 'classic') renderTimeline();
@@ -953,9 +941,9 @@ function renderGameState(lobby) {
 async function playTrack(track) {
   fadeToken++; // cancel a running fade of the previous song
   if (usingBrowserPlayer() && !playerDeviceId) {
-    showToast('Spotify Player verbindet…');
+    showToast(L('t.playerConnecting'));
     await new Promise(r => setTimeout(r, 2000));
-    if (!playerDeviceId) { showToast('Kein Player – Spotify Premium erforderlich'); return; }
+    if (!playerDeviceId) { showToast(L('t.noPlayer')); return; }
   }
   const deviceId = activeDeviceId();
   try {
@@ -972,17 +960,17 @@ async function playTrack(track) {
     }
     if (!response.ok) {
       showToast(response.status === 403
-        ? 'Für die Wiedergabe braucht der Host Spotify Premium'
+        ? L('t.hostPremium')
         : response.status === 404
-          ? 'Gerät nicht erreichbar – Spotify dort öffnen und Geräte neu laden'
-          : 'Wiedergabe fehlgeschlagen');
+          ? L('t.deviceUnreachable')
+          : L('t.playFailed'));
       return;
     }
     document.getElementById('play-btn').textContent = '⏸';
     applyVolume(volume);
     setupProgressPolling();
   } catch(e) {
-    showToast('Wiedergabe fehlgeschlagen');
+    showToast(L('t.playFailed'));
   }
 }
 
@@ -1106,12 +1094,12 @@ async function loadDevices() {
     // Don't list our own browser player twice
     spotifyDevices = (data.devices || []).filter(d => d.id && d.id !== playerDeviceId);
   } catch(e) {
-    showToast('Spotify-Geräte konnten nicht geladen werden');
+    showToast(L('t.devicesFailed'));
   }
   await minSpin;
   devicesLoading = false;
   if (selectedDeviceId && !spotifyDevices.some(d => d.id === selectedDeviceId)) {
-    showToast('Gewähltes Gerät nicht mehr verfügbar – nutze diesen Browser');
+    showToast(L('t.deviceGone'));
     selectedDeviceId = null;
     store.del('deviceId');
   }
@@ -1130,21 +1118,17 @@ const DEVICE_ICONS = {
 };
 DEVICE_ICONS.CastAudio = DEVICE_ICONS.AVR = DEVICE_ICONS.Speaker;
 DEVICE_ICONS.CastVideo = DEVICE_ICONS.TV;
-const DEVICE_TYPES = {
-  Smartphone: 'Handy', Tablet: 'Tablet', Computer: 'Computer', Speaker: 'Lautsprecher', TV: 'Fernseher',
-  CastAudio: 'Chromecast Audio', CastVideo: 'Chromecast', AVR: 'AV-Receiver', GameConsole: 'Spielkonsole', Automobile: 'Auto',
-};
 const ICON_REFRESH = svg('<path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/>');
 const ICON_CHECK = svg('<path d="M20 6 9 17l-5-5"/>');
 const ICON_CHEVRON = svg('<path d="m6 9 6 6 6-6"/>');
 
 function deviceEntries() {
-  return [{ id: '', name: 'Dieser Browser', icon: DEVICE_ICONS.Browser, sub: playerDeviceId ? 'Songline-Player' : 'verbindet…', live: false }]
+  return [{ id: '', name: L('device.browser'), icon: DEVICE_ICONS.Browser, sub: L(playerDeviceId ? 'device.browserSub' : 'device.connecting'), live: false }]
     .concat(spotifyDevices.map(d => ({
       id: d.id,
       name: d.name,
       icon: DEVICE_ICONS[d.type] || DEVICE_ICONS.Other,
-      sub: DEVICE_TYPES[d.type] || d.type || 'Spotify Connect',
+      sub: d.type && I18N.de['device.' + d.type] ? L('device.' + d.type) : d.type || 'Spotify Connect',
       live: d.is_active,
     })));
 }
@@ -1157,7 +1141,7 @@ function renderDeviceSelects() {
       <span class="device-icon">${e.icon}</span>
       <span class="device-text">
         <div class="device-name">${esc(e.name)}</div>
-        <div class="device-sub">${e.live ? '<span class="device-live"></span>' : ''}${esc(e.sub)}${e.live ? ' · aktiv' : ''}</div>
+        <div class="device-sub">${e.live ? '<span class="device-live"></span>' : ''}${esc(e.sub)}${e.live ? ' · ' + L('device.active') : ''}</div>
       </span>
       <span class="device-check">${ICON_CHECK}</span>
     </button>`).join('');
@@ -1170,7 +1154,7 @@ function renderDeviceSelects() {
   const active = entries.find(e => e.id === current) || entries[0];
   const chip = document.getElementById('device-chip');
   chip.innerHTML = `<span class="device-icon">${active.icon}</span>
-    <span class="device-chip-label">Wiedergabe auf</span>
+    <span class="device-chip-label">${L('device.playOn')}</span>
     <span class="device-chip-name">${esc(active.name)}</span>
     <span class="chevron">${ICON_CHEVRON}</span>`;
 }
@@ -1288,7 +1272,7 @@ function updateActionButtons() {
   const skip = document.getElementById('skip-button');
   skip.style.display = (myTurn || isHost()) && placing ? '' : 'none';
   skip.disabled = !isGuess && myTurn && tokens < 1;
-  if (!isGuess) skip.textContent = myTurn ? '⏭ Überspringen (1 🪙)' : '⏭ Song überspringen';
+  if (!isGuess) skip.textContent = L(myTurn ? 'game.skipToken' : 'game.skipSong');
 
   const buy = document.getElementById('buy-button');
   buy.style.display = !isGuess && myTurn && placing && state.lobby.sourceType === 'playlist' ? '' : 'none';
@@ -1328,10 +1312,10 @@ function getTrackYear(track) {
 function submitGuess() {
   if (!state.lobby || !isMyTurn()) return;
   const guessTitle = document.getElementById('guess-title').value.trim();
-  if (!guessTitle) { showToast('Bitte einen Titel eingeben'); return; }
+  if (!guessTitle) { showToast(L('t.enterTitle')); return; }
   const guessArtist = document.getElementById('guess-artist').value.trim();
   if (state.lobby.gameMode === 'guess-hard' && !guessArtist) {
-    showToast('Bitte Interpret eingeben'); return;
+    showToast(L('t.enterArtist')); return;
   }
   socket.emit('game:guess', { code: state.lobby.code, guessTitle, guessArtist });
 }
@@ -1359,9 +1343,9 @@ function renderTimeline() {
       challenge && 'challenged',
       inChallenge && state.challengeSlot === i && 'challenge-pick',
     ].filter(Boolean).join(' ');
-    const label = challenge ? `📣 ${esc(challenge.name)}`
-      : inChallenge && i === activeSlot ? `👉 ${esc(currentUnit()?.name)}`
-      : inChallenge && state.challengeSlot === i ? '📣 Du?'
+    const label = challenge ? `📣 ${esc(un(challenge.name))}`
+      : inChallenge && i === activeSlot ? `👉 ${esc(un(currentUnit()?.name))}`
+      : inChallenge && state.challengeSlot === i ? `📣 ${L('game.you')}`
       : slotLabel(tl, i);
     html += `
       <div class="timeline-slot">
@@ -1391,7 +1375,7 @@ function renderTimeline() {
 }
 
 function slotLabel(tl, i) {
-  if (!tl.length) return 'Hier';
+  if (!tl.length) return L('game.slotHere');
   if (i === 0) return `< ${tl[0].year}`;
   if (i === tl.length) return `> ${tl[tl.length-1].year}`;
   return `${tl[i-1].year}–${tl[i].year}`;
@@ -1402,7 +1386,7 @@ function selectSlot(i) {
   if (turn?.phase === 'challenge') {
     if (!canChallenge()) return;
     if (i === turn.slotIndex || turn.challenges.some(c => c.slotIndex === i)) {
-      showToast('Dieser Platz ist schon belegt'); return;
+      showToast(L('t.slotTaken')); return;
     }
     state.challengeSlot = i;
     renderTimeline();
@@ -1414,7 +1398,7 @@ function selectSlot(i) {
   renderTimeline();
   updateActionButtons();
   socket.emit('game:slot-select', { code: state.lobby.code, slotIndex: i });
-  document.getElementById('game-hint').textContent = `Slot gewählt: ${getSlotDescription(i)}`;
+  document.getElementById('game-hint').textContent = L('game.slotChosen', { slot: getSlotDescription(i) });
 }
 
 function getSlotDescription(i) {
@@ -1428,20 +1412,15 @@ function confirmGuess() {
   const guessArtist = document.getElementById('token-artist').value.trim();
   const guessYear = document.getElementById('token-year').value.trim();
   const variant = state.lobby.variant || 'original';
-  if (variant !== 'original' && (!guessTitle || !guessArtist)) { showToast('Bitte Titel und Interpret eingeben'); return; }
-  if (variant === 'expert' && !guessYear) { showToast('Bitte das Erscheinungsjahr eingeben'); return; }
+  if (variant !== 'original' && (!guessTitle || !guessArtist)) { showToast(L('t.enterTitleArtist')); return; }
+  if (variant === 'expert' && !guessYear) { showToast(L('t.enterYear')); return; }
 
   socket.emit('game:confirm', { code: state.lobby.code, slotIndex: state.selectedSlotIndex, guessTitle, guessArtist, guessYear });
 }
 
 // Text & fields of the title/artist box depending on the variant
 function syncTokenGuess(variant) {
-  const hints = {
-    original: '🪙 Optional: Nenne Titel <b>und</b> Interpret für einen Token',
-    pro: '🎤 Pflicht: Nenne Titel <b>und</b> Interpret, sonst gibt\'s die Karte nicht',
-    expert: '🎤 Pflicht: Titel, Interpret <b>und</b> exaktes Jahr',
-  };
-  document.getElementById('token-hint').innerHTML = hints[variant] || hints.original;
+  document.getElementById('token-hint').innerHTML = L(`token.${['original', 'pro', 'expert'].includes(variant) ? variant : 'original'}`);
   document.getElementById('token-year-wrap').style.display = variant === 'expert' ? '' : 'none';
 }
 
@@ -1534,13 +1513,11 @@ function updateChallengeUI() {
   const self = myUnit();
   const mine = turn.challenges.find(c => c.unitId === self?.id);
   let text;
-  if (isMyTurn()) text = 'Die anderen können jetzt SONGLINE! rufen, wenn sie glauben, dass du falsch liegst…';
-  else if (canChallenge()) text = turn.slotIndex === null
-    ? `${cp.name} hat keine Ahnung. Weißt du, wo der Song hingehört? Tippe einen Platz an.`
-    : `Liegt ${cp.name} falsch? Tippe einen anderen Platz in der Zeitlinie an.`;
-  else if (mine) text = state.lobby.teamMode ? `${mine.by} hat für euch SONGLINE! gerufen – warte aufs Aufdecken…` : 'Dein SONGLINE! steht – warte aufs Aufdecken…';
-  else if (!self?.tokens) text = 'Du hast keine Tokens für SONGLINE!. Warte aufs Aufdecken…';
-  else text = 'Warte aufs Aufdecken…';
+  if (isMyTurn()) text = L('ch.active');
+  else if (canChallenge()) text = L(turn.slotIndex === null ? 'ch.noIdea' : 'ch.wrong', { name: un(cp.name) });
+  else if (mine) text = state.lobby.teamMode ? L('ch.teamCalled', { name: mine.by }) : L('ch.called');
+  else if (!self?.tokens) text = L('ch.noTokens');
+  else text = L('ch.wait');
   document.getElementById('challenge-text').textContent = text;
 
   const canCall = canChallenge();
@@ -1572,7 +1549,7 @@ function resolveNow() {
 
 function buyCard() {
   if (!state.lobby || !isMyTurn()) return;
-  if (!confirm('3 Tokens gegen eine Karte eintauschen? Sie kommt direkt richtig in deine Zeitlinie.')) return;
+  if (!confirm(L('t.confirmBuy'))) return;
   socket.emit('game:buy-card', { code: state.lobby.code });
 }
 
@@ -1586,44 +1563,39 @@ function showVerdict(correct, gaveUp, track, currentPlayerName, stolenBy, tokenE
   const yearStr = year ? ` (${year})` : '';
   const gameMode = state.lobby?.gameMode || 'classic';
   const classic = gameMode === 'classic';
+  const vp = { song: name, artist, year: yearStr, yearPlain: year || '?' };
   document.getElementById('verdict-pts-label').textContent =
-    (classic ? 'Karte' : 'Punkt') + (tokenEarned ? ' · +1 🪙 für Titel & Interpret' : '');
+    L(classic ? 'v.card' : 'v.point') + (tokenEarned ? L('v.tokenEarned') : '');
 
   if (stolenBy) {
     document.getElementById('verdict-icon').textContent = '📣';
     document.getElementById('verdict-title').textContent = 'SONGLINE!';
     document.getElementById('verdict-title').className = 'verdict-title correct';
-    document.getElementById('verdict-sub').textContent = `${stolenBy} klaut die Karte! "${name}" von ${artist}${yearStr}`;
-    document.getElementById('verdict-pts').textContent = `+1 für ${stolenBy}`;
+    document.getElementById('verdict-sub').textContent = L('v.stolen', { stealer: un(stolenBy), ...vp });
+    document.getElementById('verdict-pts').textContent = L('v.stolenPts', { name: un(stolenBy) });
   } else if (gaveUp) {
     document.getElementById('verdict-icon').textContent = '🏳️';
-    document.getElementById('verdict-title').textContent = 'Aufgegeben';
+    document.getElementById('verdict-title').textContent = L('v.gaveUpTitle');
     document.getElementById('verdict-title').className = 'verdict-title wrong';
-    document.getElementById('verdict-sub').textContent = `${currentPlayerName} hat aufgegeben. "${name}" von ${artist}${yearStr}`;
+    document.getElementById('verdict-sub').textContent = L('v.gaveUp', { name: un(currentPlayerName), ...vp });
     document.getElementById('verdict-pts').textContent = '±0';
   } else if (correct) {
     document.getElementById('verdict-icon').textContent = '🎉';
-    document.getElementById('verdict-title').textContent = 'Richtig!';
+    document.getElementById('verdict-title').textContent = L('v.correctTitle');
     document.getElementById('verdict-title').className = 'verdict-title correct';
-    document.getElementById('verdict-sub').textContent = gameMode === 'classic'
-      ? `"${name}" von ${artist} aus ${year} – korrekt eingeordnet!`
-      : `"${name}" von ${artist}${yearStr} – korrekt erraten!`;
+    document.getElementById('verdict-sub').textContent = L(gameMode === 'classic' ? 'v.correctClassic' : 'v.correctGuess', vp);
     document.getElementById('verdict-pts').textContent = '+1';
   } else if (reason) {
     document.getElementById('verdict-icon').textContent = '😬';
-    document.getElementById('verdict-title').textContent = 'Fast!';
+    document.getElementById('verdict-title').textContent = L('v.almostTitle');
     document.getElementById('verdict-title').className = 'verdict-title wrong';
-    document.getElementById('verdict-sub').textContent = reason === 'year'
-      ? `Richtig eingeordnet, aber "${name}" von ${artist} erschien ${year}.`
-      : `Richtig eingeordnet, aber gesucht war "${name}" von ${artist}${yearStr}.`;
+    document.getElementById('verdict-sub').textContent = L(reason === 'year' ? 'v.almostYear' : 'v.almostNames', vp);
     document.getElementById('verdict-pts').textContent = '±0';
   } else {
     document.getElementById('verdict-icon').textContent = '💔';
-    document.getElementById('verdict-title').textContent = 'Falsch!';
+    document.getElementById('verdict-title').textContent = L('v.wrongTitle');
     document.getElementById('verdict-title').className = 'verdict-title wrong';
-    document.getElementById('verdict-sub').textContent = gameMode === 'classic'
-      ? `"${name}" von ${artist} erschien ${year}. Leider falsch.`
-      : `Der Song war: "${name}" von ${artist}${yearStr}`;
+    document.getElementById('verdict-sub').textContent = L(gameMode === 'classic' ? 'v.wrongClassic' : 'v.wrongGuess', vp);
     document.getElementById('verdict-pts').textContent = '±0';
   }
 }
@@ -1650,11 +1622,11 @@ function scoreCard(u, { leader, mine, current, classic }) {
   const style = [u.connected && !away ? '' : 'opacity:0.45', u.color ? `--team:${u.color}` : ''].filter(Boolean).join(';');
   return `
     <div class="score-card ${leader ? 'leader' : ''} ${current ? 'current' : ''} ${u.color ? 'team' : ''}" style="${style}">
-      <div class="score-avatar">${esc(u.name.replace(/^Team /, '')[0].toUpperCase())}</div>
-      <div class="score-name">${esc(u.name)}${mine ? ' ★' : ''}${away ? ' ⏸' : u.connected ? '' : ' 💤'}</div>
+      <div class="score-avatar">${esc(un(u.name).replace(/^Team /, '')[0].toUpperCase())}</div>
+      <div class="score-name">${esc(un(u.name))}${mine ? ' ★' : ''}${away ? ' ⏸' : u.connected ? '' : ' 💤'}</div>
       ${u.color ? `<div class="score-members">${esc(u.memberNames.join(', '))}</div>` : ''}
       <div class="score-pts">${u.score}</div>
-      ${classic ? `<div class="score-timeline-count">${u.timeline.length} ${u.timeline.length === 1 ? 'Karte' : 'Karten'} · ${u.tokens || 0} 🪙</div>` : ''}
+      ${classic ? `<div class="score-timeline-count">${L(u.timeline.length === 1 ? 'game.card' : 'game.cards', { n: u.timeline.length })} · ${u.tokens || 0} 🪙</div>` : ''}
     </div>`;
 }
 
@@ -1674,15 +1646,17 @@ function renderScores(lobby = state.lobby) {
 // END SCREEN
 // ════════════════════════════════════════════════════════════════
 function showEndScreen(winner, lobby) {
+  state.lastWinner = winner;
   showScreen('end');
   document.getElementById('btn-rematch').style.display = isHost() ? 'block' : 'none';
   document.getElementById('rematch-hint').style.display = isHost() ? 'none' : 'block';
   const classic = lobby?.gameMode === 'classic';
-  const unitWord = classic ? (winner.score === 1 ? 'Karte' : 'Karten') : (winner.score === 1 ? 'Punkt' : 'Punkten');
-  document.getElementById('winner-name').textContent = winner.name;
+  const one = winner.score === 1;
+  const unitWord = L(classic ? (one ? 'end.unitCard' : 'end.unitCards') : (one ? 'end.unitPoint' : 'end.unitPoints'));
+  document.getElementById('winner-name').textContent = un(winner.name);
   document.getElementById('winner-sub').textContent = lobby?.teamMode
-    ? `${winner.members.join(', ')} – gewonnen mit ${winner.score} ${unitWord}! 🎶`
-    : `hat mit ${winner.score} ${unitWord} gewonnen! 🎶`;
+    ? L('end.teamWon', { members: winner.members.join(', '), score: winner.score, unit: unitWord })
+    : L('end.wonWith', { score: winner.score, unit: unitWord });
   const units = playingUnits(lobby);
   const maxScore = Math.max(0, ...units.map(u => u.score));
   document.getElementById('end-scores-grid').innerHTML = [...units]
@@ -1696,7 +1670,7 @@ function resetGame() {
   document.getElementById('timeline-section').style.display = 'block';
   document.getElementById('guess-section').style.display = 'none';
   document.getElementById('btn-guess').style.display = 'block';
-  document.getElementById('btn-reveal').textContent = '🤷 Keine Ahnung';
+  document.getElementById('btn-reveal').textContent = L('game.noIdea');
   if (state.lobby && isHost()) {
     socket.emit('lobby:back', { code: state.lobby.code });
   } else if (state.lobby) {
@@ -1723,21 +1697,21 @@ function closeSearchModal() {
 async function doSearch() {
   const q = document.getElementById('search-input').value.trim();
   if (!q) return;
-  document.getElementById('search-results').innerHTML = '<p class="text-muted" style="padding:12px;text-align:center">Suche…</p>';
+  document.getElementById('search-results').innerHTML = `<p class="text-muted" style="padding:12px;text-align:center">${L('search.searching')}</p>`;
   try {
     const res = await apiFetch(`/api/search?q=${encodeURIComponent(q)}&token=${state.accessToken}`);
     const data = await res.json();
     const tracks = data.tracks?.items || [];
     renderSearchResults(tracks);
   } catch(e) {
-    document.getElementById('search-results').innerHTML = '<p class="text-muted" style="padding:12px;text-align:center">Fehler bei der Suche</p>';
+    document.getElementById('search-results').innerHTML = `<p class="text-muted" style="padding:12px;text-align:center">${L('search.failed')}</p>`;
   }
 }
 
 function renderSearchResults(tracks) {
   const el = document.getElementById('search-results');
   if (!tracks.length) {
-    el.innerHTML = '<p class="text-muted" style="padding:12px;text-align:center">Keine Ergebnisse</p>';
+    el.innerHTML = `<p class="text-muted" style="padding:12px;text-align:center">${L('search.none')}</p>`;
     return;
   }
   el.innerHTML = tracks.map(t => {
@@ -1783,3 +1757,37 @@ function showToast(msg) {
   clearTimeout(toastTimeout);
   toastTimeout = setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+// ════════════════════════════════════════════════════════════════
+// LANGUAGE SWITCH
+// ════════════════════════════════════════════════════════════════
+// Updates labels of the current game screen without resetting selection or reveal state
+function refreshGameTexts() {
+  const lobby = state.lobby;
+  const cp = currentUnit();
+  if (!lobby || !cp) return;
+  const myTurn = isMyTurn();
+  applyModeUI(lobby.gameMode);
+  const who = lobby.teamMode ? `${un(cp.name)} (${cp.memberNames.join(', ')})` : cp.name;
+  document.getElementById('current-player-display').textContent = un(cp.name);
+  document.getElementById('round-display').textContent = L('game.round', { round: lobby.round });
+  document.getElementById('waiting-text').textContent = L('game.waitingFor', { name: who });
+  document.getElementById('timeline-label').textContent = myTurn
+    ? L(lobby.teamMode ? 'game.ourTimeline' : 'game.myTimeline')
+    : L('game.timelineOf', { name: un(cp.name) });
+  syncTokenGuess(lobby.variant);
+  renderScores(lobby);
+  if (lobby.gameMode === 'classic') renderTimeline();
+  updateActionButtons();
+  updateChallengeUI();
+}
+
+onLangChange(() => {
+  syncMenu();
+  renderDeviceSelects();
+  if (!state.lobby || state.tv) return;
+  const active = id => document.getElementById('screen-' + id).classList.contains('active');
+  if (active('lobby')) refreshLobby(state.lobby);
+  if (active('game')) refreshGameTexts();
+  if (active('end') && state.lastWinner) showEndScreen(state.lastWinner, state.lobby);
+});

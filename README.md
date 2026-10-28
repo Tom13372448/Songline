@@ -3,7 +3,7 @@
 A self-hosted party game for your home network: a song plays, and you place it on your timeline by release year.
 Runs on a Raspberry Pi (or any Docker host) and is played in the browser on phones, tablets and laptops.
 
-> **Note:** The game's user interface is in German.
+> The game is available in **German and English** – every player picks their own language (DE/EN switch in the header).
 > Inspired by the card game HITSTER – this is an unofficial fan project and not affiliated with its publisher.
 
 ---
@@ -26,6 +26,7 @@ Runs on a Raspberry Pi (or any Docker host) and is played in the browser on phon
 - Running games **survive a server restart** (stored in `./data/`)
 - Release years: instead of remaster/best-of years, the earliest release of the song is used
 - Host can **close the lobby** for everyone
+- **German & English** – each player chooses their language; server messages are translated on every device
 
 ---
 
@@ -106,11 +107,11 @@ https://<Your_IP_Address>
 
 ## How to play
 
-1. The host enters their name, taps **Spiel hosten** (host game) and logs in with Spotify.
+1. The host enters their name, taps **Host a game** and logs in with Spotify.
 2. Everyone else opens `https://<Your_IP_Address>`, enters a name and the 4-letter lobby code – or scans the QR code.
 3. The host picks a mode, a music source (preset packs, own playlist or manual search) and the playback device, then starts the game.
 
-The rules are also explained in the game's start menu (**Spielregeln**).
+The rules are also explained in the game's start menu (**How to play**).
 
 ---
 
@@ -140,6 +141,7 @@ backend/
   test/             Unit and integration tests
 frontend/public/
   index.html        Markup of all screens
+  i18n.js           German/English translations
   app.js            Client logic
   tv.js             TV/projector view
   effects.js        Sounds and confetti

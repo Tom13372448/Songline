@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SONGLINE – Das Musikquiz</title>
+<title>SONGLINE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
@@ -14,10 +14,14 @@
 <header>
   <div class="logo">SONGLINE</div>
   <div class="header-right">
-    <button class="icon-btn" id="sound-toggle" onclick="toggleSound()" title="Töne an/aus" aria-label="Töne an/aus">🔊</button>
+    <div class="lang-switch" role="group" data-i18n-title="header.lang">
+      <button class="lang-btn" data-lang="de" onclick="setLang('de')">DE</button>
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+    </div>
+    <button class="icon-btn" id="sound-toggle" onclick="toggleSound()" data-i18n-title="header.sound">🔊</button>
     <div class="spotify-badge" id="spotify-status" style="display:none">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-      Verbunden
+      <span data-i18n="header.connected">Verbunden</span>
     </div>
   </div>
 </header>
@@ -27,43 +31,43 @@
   <div class="menu-hero">
     <div class="menu-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="login-title">SONG<br>LINE</div>
-    <p class="menu-tagline">Hör rein. Schätz das Jahr. Bau deine Zeitlinie.</p>
+    <p class="menu-tagline" data-i18n="menu.tagline">Hör rein. Schätz das Jahr. Bau deine Zeitlinie.</p>
   </div>
 
   <div class="menu-name">
-    <label for="home-name">Dein Name</label>
-    <input type="text" id="home-name" placeholder="Wie heißt du?" maxlength="20" autocomplete="nickname"
+    <label for="home-name" data-i18n="menu.name">Dein Name</label>
+    <input type="text" id="home-name" placeholder="Wie heißt du?" data-i18n-ph="menu.namePh" maxlength="20" autocomplete="nickname"
       onkeydown="if(event.key==='Enter')document.getElementById('lobby-code-input').focus()">
   </div>
 
   <div class="menu-grid">
     <button class="menu-card menu-card-host" onclick="createLobby()">
       <span class="menu-icon">🎤</span>
-      <span class="menu-card-title">Spiel hosten</span>
+      <span class="menu-card-title" data-i18n="menu.host">Spiel hosten</span>
       <span class="menu-card-sub" id="host-sub">Mit Spotify Premium – du bestimmst die Musik</span>
     </button>
 
     <div class="menu-card menu-card-join">
       <span class="menu-icon">🎟️</span>
-      <span class="menu-card-title">Beitreten</span>
+      <span class="menu-card-title" data-i18n="menu.join">Beitreten</span>
       <div class="menu-join-row">
         <input type="text" id="lobby-code-input" class="menu-code-input" placeholder="CODE" maxlength="4" autocomplete="off"
           oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')joinLobby()">
-        <button class="btn-primary" onclick="joinLobby()">Los</button>
+        <button class="btn-primary" onclick="joinLobby()" data-i18n="menu.go">Los</button>
       </div>
-      <span class="menu-card-sub">Kein Spotify nötig</span>
+      <span class="menu-card-sub" data-i18n="menu.joinSub">Kein Spotify nötig</span>
     </div>
 
     <a class="menu-card menu-card-small" href="/tv">
       <span class="menu-icon">📺</span>
-      <span class="menu-card-title">Als TV-Bildschirm nutzen</span>
-      <span class="menu-card-sub">Zeigt allen die Zeitlinien</span>
+      <span class="menu-card-title" data-i18n="menu.tv">Als TV-Bildschirm nutzen</span>
+      <span class="menu-card-sub" data-i18n="menu.tvSub">Zeigt allen die Zeitlinien</span>
     </a>
 
     <button class="menu-card menu-card-small" onclick="openRules()">
       <span class="menu-icon">📖</span>
-      <span class="menu-card-title">Spielregeln</span>
-      <span class="menu-card-sub">Modi, Tokens &amp; SONGLINE!</span>
+      <span class="menu-card-title" data-i18n="menu.rules">Spielregeln</span>
+      <span class="menu-card-sub" data-i18n="menu.rulesSub">Modi, Tokens &amp; SONGLINE!</span>
     </button>
   </div>
 
@@ -73,52 +77,52 @@
 <!-- ════════════════════════════════════════════════════════ RULES -->
 <div class="modal-overlay" id="rules-modal" onclick="if(event.target===this)closeRules()">
   <div class="modal-box rules-modal">
-    <div class="modal-title">Spielregeln</div>
+    <div class="modal-title" data-i18n="rules.title">Spielregeln</div>
     <div class="rules-section">
       <h3>📅 Classic</h3>
-      <p>Ein Song läuft – ordne ihn in deine Zeitlinie ein: vor, zwischen oder nach deinen Karten.
+      <p data-i18n-html="rules.classic">Ein Song läuft – ordne ihn in deine Zeitlinie ein: vor, zwischen oder nach deinen Karten.
       Richtig eingeordnet? Die Karte gehört dir. Wer zuerst die eingestellte Zahl an Karten hat, gewinnt.
       Jeder startet mit einer aufgedeckten Startkarte.</p>
     </div>
     <div class="rules-section">
       <h3>🪙 Tokens</h3>
-      <p>Jeder startet mit 2 Tokens (max. 5). Nenn zusätzlich Titel <b>und</b> Interpret, um einen zu verdienen.
+      <p data-i18n-html="rules.tokens">Jeder startet mit 2 Tokens (max. 5). Nenn zusätzlich Titel <b>und</b> Interpret, um einen zu verdienen.
       1 Token = Song überspringen · 3 Tokens = Karte kaufen.</p>
     </div>
     <div class="rules-section">
       <h3>📣 SONGLINE!</h3>
-      <p>Glaubst du, jemand liegt falsch? Tippe für 1 Token einen anderen Platz in seiner Zeitlinie an.
+      <p data-i18n-html="rules.songline">Glaubst du, jemand liegt falsch? Tippe für 1 Token einen anderen Platz in seiner Zeitlinie an.
       Liegst du richtig und er falsch, klaust du die Karte.</p>
     </div>
     <div class="rules-section">
-      <h3>🔥 Pro &amp; Experte</h3>
-      <p><b>Pro:</b> Die Karte gibt's nur mit richtigem Titel und Interpret.
+      <h3 data-i18n="rules.proTitle">🔥 Pro &amp; Experte</h3>
+      <p data-i18n-html="rules.pro"><b>Pro:</b> Die Karte gibt's nur mit richtigem Titel und Interpret.
       <b>Experte:</b> Zusätzlich muss das Erscheinungsjahr exakt stimmen.</p>
     </div>
     <div class="rules-section">
-      <h3>🎵 Rate-Modi</h3>
-      <p><b>Leicht:</b> Errate den Titel. <b>Schwer:</b> Titel und Interpret. Jede richtige Antwort gibt einen Punkt.
+      <h3 data-i18n="rules.guessTitle">🎵 Rate-Modi</h3>
+      <p data-i18n-html="rules.guess"><b>Leicht:</b> Errate den Titel. <b>Schwer:</b> Titel und Interpret. Jede richtige Antwort gibt einen Punkt.
       Kleine Tippfehler sind erlaubt.</p>
     </div>
     <div class="rules-section">
       <h3>👥 Teams</h3>
-      <p>Spielt in 2–4 Teams mit gemeinsamer Zeitlinie und gemeinsamen Tokens – jedes Teammitglied darf für sein Team antworten.</p>
+      <p data-i18n-html="rules.teams">Spielt in 2–4 Teams mit gemeinsamer Zeitlinie und gemeinsamen Tokens – jedes Teammitglied darf für sein Team antworten.</p>
     </div>
-    <button class="btn-primary" onclick="closeRules()">Los geht's!</button>
+    <button class="btn-primary" onclick="closeRules()" data-i18n="rules.ok">Los geht's!</button>
   </div>
 </div>
 
 <!-- ════════════════════════════════════════════════════════ LOBBY -->
 <div id="screen-lobby" class="screen">
   <div style="text-align:center;margin-bottom:24px">
-    <div style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px">Lobby-Code</div>
+    <div style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px" data-i18n="lobby.code">Lobby-Code</div>
     <div class="lobby-code" id="lobby-code-display">----</div>
-    <div style="font-size:0.78rem;color:var(--muted)">Teile diesen Code mit anderen Spielern</div>
+    <div style="font-size:0.78rem;color:var(--muted)" data-i18n="lobby.share">Teile diesen Code mit anderen Spielern</div>
     <div class="flex-row" style="justify-content:center;gap:10px;margin-top:12px;flex-wrap:wrap">
-      <button class="btn-secondary" onclick="shareLobby()" style="font-size:0.8rem">🔗 Einladen</button>
-      <button class="btn-secondary" onclick="showQr()" style="font-size:0.8rem">▦ QR-Code</button>
-      <button class="btn-secondary" onclick="openTvDialog()" style="font-size:0.8rem">📺 Auf TV zeigen</button>
-      <button class="btn-secondary" onclick="leaveLobby()" style="font-size:0.8rem">Verlassen</button>
+      <button class="btn-secondary" onclick="shareLobby()" style="font-size:0.8rem" data-i18n="lobby.invite">🔗 Einladen</button>
+      <button class="btn-secondary" onclick="showQr()" style="font-size:0.8rem" data-i18n="lobby.qr">▦ QR-Code</button>
+      <button class="btn-secondary" onclick="openTvDialog()" style="font-size:0.8rem" data-i18n="lobby.showTv">📺 Auf TV zeigen</button>
+      <button class="btn-secondary" onclick="leaveLobby()" style="font-size:0.8rem" data-i18n="lobby.leave">Verlassen</button>
     </div>
   </div>
 
@@ -126,52 +130,52 @@
   <div class="round-banner" id="round-banner" style="display:none">
     <span class="tv-eq"><i></i><i></i><i></i><i></i></span>
     <div style="flex:1">
-      <div class="round-banner-title">Runde läuft</div>
+      <div class="round-banner-title" data-i18n="lobby.roundRunning">Runde läuft</div>
       <div class="round-banner-sub" id="round-banner-sub"></div>
     </div>
-    <button class="btn-primary" onclick="rejoinRound()">Wieder einsteigen</button>
+    <button class="btn-primary" onclick="rejoinRound()" data-i18n="lobby.rejoin">Wieder einsteigen</button>
   </div>
 
   <!-- Selected playlist (visible to all players) -->
   <div class="selected-playlist-banner" id="selected-playlist-banner" style="display:none">
     <img id="selected-playlist-cover" src="" alt="">
     <div>
-      <div class="spb-label">Play-Paket</div>
+      <div class="spb-label" data-i18n="lobby.pack">Play-Paket</div>
       <div class="spb-name" id="selected-playlist-name">–</div>
     </div>
   </div>
 
   <div class="card">
-    <div class="section-title" style="font-size:1rem;margin-bottom:12px">Spieler</div>
+    <div class="section-title" style="font-size:1rem;margin-bottom:12px" data-i18n="lobby.players">Spieler</div>
     <div id="lobby-players-list"></div>
   </div>
 
   <!-- Host settings -->
   <div id="lobby-settings" class="card" style="display:none">
-    <div class="section-title" style="font-size:1rem;margin-bottom:12px">Einstellungen</div>
+    <div class="section-title" style="font-size:1rem;margin-bottom:12px" data-i18n="lobby.settings">Einstellungen</div>
     <div class="mode-grid" style="margin-bottom:16px">
       <div class="mode-option selected" data-mode="classic" onclick="setLobbyMode('classic')">
         <div class="mode-icon">📅</div>
-        <div class="mode-name">Classic</div>
-        <div class="mode-desc">Zeitlinie einordnen</div>
+        <div class="mode-name" data-i18n="mode.classic">Classic</div>
+        <div class="mode-desc" data-i18n="mode.classicDesc">Zeitlinie einordnen</div>
       </div>
       <div class="mode-option" data-mode="guess-easy" onclick="setLobbyMode('guess-easy')">
         <div class="mode-icon">🎵</div>
-        <div class="mode-name">Rate – Leicht</div>
-        <div class="mode-desc">Nur Titel</div>
+        <div class="mode-name" data-i18n="mode.easy">Rate – Leicht</div>
+        <div class="mode-desc" data-i18n="mode.easyDesc">Nur Titel</div>
       </div>
       <div class="mode-option" data-mode="guess-hard" onclick="setLobbyMode('guess-hard')">
         <div class="mode-icon">🔥</div>
-        <div class="mode-name">Rate – Schwer</div>
-        <div class="mode-desc">Titel + Interpret</div>
+        <div class="mode-name" data-i18n="mode.hard">Rate – Schwer</div>
+        <div class="mode-desc" data-i18n="mode.hardDesc">Titel + Interpret</div>
       </div>
     </div>
 
     <div id="classic-options">
       <div class="source-tabs variant-tabs">
-        <div class="source-tab variant-tab active" data-variant="original" onclick="setVariant('original')">Original</div>
-        <div class="source-tab variant-tab" data-variant="pro" onclick="setVariant('pro')">Pro</div>
-        <div class="source-tab variant-tab" data-variant="expert" onclick="setVariant('expert')">Experte</div>
+        <div class="source-tab variant-tab active" data-variant="original" onclick="setVariant('original')" data-i18n="variant.original">Original</div>
+        <div class="source-tab variant-tab" data-variant="pro" onclick="setVariant('pro')" data-i18n="variant.pro">Pro</div>
+        <div class="source-tab variant-tab" data-variant="expert" onclick="setVariant('expert')" data-i18n="variant.expert">Experte</div>
       </div>
       <div class="rules-box" id="classic-rules"></div>
     </div>
@@ -180,41 +184,41 @@
       <label class="switch-row">
         <input type="checkbox" id="team-mode" onchange="emitSettings()">
         <span class="switch"></span>
-        <span>👥 Im Team spielen</span>
+        <span data-i18n="teams.toggle">👥 Im Team spielen</span>
       </label>
       <div id="team-options" class="flex-row" style="gap:10px;display:none">
         <select id="team-count" onchange="emitSettings()" class="team-count">
-          <option value="2">2 Teams</option>
-          <option value="3">3 Teams</option>
-          <option value="4">4 Teams</option>
+          <option value="2" data-i18n-n="teams.count">2 Teams</option>
+          <option value="3" data-i18n-n="teams.count">3 Teams</option>
+          <option value="4" data-i18n-n="teams.count">4 Teams</option>
         </select>
-        <button class="btn-secondary" onclick="shuffleTeams()" style="font-size:0.8rem">🔀 Mischen</button>
+        <button class="btn-secondary" onclick="shuffleTeams()" style="font-size:0.8rem" data-i18n="teams.shuffle">🔀 Mischen</button>
       </div>
     </div>
 
     <div class="input-group" style="margin-bottom:8px">
-      <label>Musikquelle</label>
+      <label data-i18n="source.label">Musikquelle</label>
     </div>
     <div class="source-tabs">
-      <div class="source-tab active" data-source="preset" onclick="setSourceTab('preset')">🎁 Play-Pakete</div>
-      <div class="source-tab" data-source="playlist" onclick="setSourceTab('playlist')">🔗 Eigene Playlist</div>
-      <div class="source-tab" data-source="search" onclick="setSourceTab('search')">🔍 Songs suchen</div>
+      <div class="source-tab active" data-source="preset" onclick="setSourceTab('preset')" data-i18n="source.preset">🎁 Play-Pakete</div>
+      <div class="source-tab" data-source="playlist" onclick="setSourceTab('playlist')" data-i18n="source.playlist">🔗 Eigene Playlist</div>
+      <div class="source-tab" data-source="search" onclick="setSourceTab('search')" data-i18n="source.search">🔍 Songs suchen</div>
     </div>
 
     <div id="source-preset-wrap">
       <div class="pack-grid" id="pack-grid">
-        <p class="text-muted" style="grid-column:1/-1;text-align:center;padding:12px">Lade Play-Pakete…</p>
+        <p class="text-muted" style="grid-column:1/-1;text-align:center;padding:12px" data-i18n="source.loadingPacks">Lade Play-Pakete…</p>
       </div>
     </div>
 
     <div id="source-playlist-wrap" class="input-group" style="display:none">
-      <label>Playlist URL oder ID</label>
+      <label data-i18n="source.playlistLabel">Playlist URL oder ID</label>
       <input type="text" id="lobby-playlist-input" placeholder="https://open.spotify.com/playlist/..." oninput="onCustomPlaylistInput()">
       <div id="custom-playlist-preview"></div>
     </div>
 
     <div id="source-search-wrap" style="display:none;margin-bottom:16px">
-      <p class="text-muted">Der Host wählt während des Spiels jeden Song manuell über die Spotify-Suche aus.</p>
+      <p class="text-muted" data-i18n="source.searchHint">Der Host wählt während des Spiels jeden Song manuell über die Spotify-Suche aus.</p>
     </div>
 
     <div class="input-group">
@@ -228,24 +232,24 @@
     </div>
     <div class="input-group">
       <div class="device-head">
-        <label>Wiedergabe-Gerät</label>
-        <button class="icon-btn device-refresh" onclick="loadDevices()" title="Geräte neu laden" aria-label="Geräte neu laden"></button>
+        <label data-i18n="device.label">Wiedergabe-Gerät</label>
+        <button class="icon-btn device-refresh" onclick="loadDevices()" data-i18n-title="device.reload"></button>
       </div>
       <div class="device-list"></div>
-      <p class="device-hint">Dein Gerät fehlt? Öffne Spotify darauf (Handy, PC, Lautsprecher, TV) und lade die Liste neu.</p>
+      <p class="device-hint" data-i18n="device.hint">Dein Gerät fehlt? Öffne Spotify darauf (Handy, PC, Lautsprecher, TV) und lade die Liste neu.</p>
     </div>
-    <button class="btn-primary" onclick="startLobbyGame()">Spiel starten</button>
+    <button class="btn-primary" onclick="startLobbyGame()" data-i18n="lobby.start">Spiel starten</button>
   </div>
 
   <!-- Guest: waiting -->
   <div id="lobby-guest-info" class="card" style="display:none;text-align:center;padding:28px">
     <div style="font-size:2rem;margin-bottom:10px">⏳</div>
-    <div style="color:var(--muted);font-size:0.9rem">Warten auf den Host…</div>
+    <div style="color:var(--muted);font-size:0.9rem" data-i18n="lobby.waiting">Warten auf den Host…</div>
   </div>
 
   <!-- Host only -->
   <div class="lobby-footer" id="close-lobby-wrap" style="display:none">
-    <button class="btn-danger" onclick="closeLobby()">🚪 Lobby für alle schließen</button>
+    <button class="btn-danger" onclick="closeLobby()" data-i18n="lobby.close">🚪 Lobby für alle schließen</button>
   </div>
 </div>
 
@@ -254,12 +258,12 @@
   <!-- Header row -->
   <div class="game-header">
     <div>
-      <div class="current-player-label">Dran ist</div>
+      <div class="current-player-label" data-i18n="game.turnLabel">Dran ist</div>
       <div class="current-player-name" id="current-player-display">–</div>
     </div>
     <div class="flex-row" style="gap:10px">
       <div class="round-badge" id="round-display">Runde 1</div>
-      <button class="btn-secondary" onclick="leaveRound()" style="font-size:0.8rem;padding:6px 14px">↩ Zur Lobby</button>
+      <button class="btn-secondary" onclick="leaveRound()" style="font-size:0.8rem;padding:6px 14px" data-i18n="game.toLobby">↩ Zur Lobby</button>
     </div>
   </div>
 
@@ -275,8 +279,8 @@
   <div class="track-card" id="track-card">
     <div class="track-hidden-state" id="track-hidden">
       <span class="mystery-icon">🎵</span>
-      <div class="mystery-text">Song läuft</div>
-      <div class="mystery-sub">Der Host spielt den Song ab – hört gemeinsam zu und ordnet ihn ein!</div>
+      <div class="mystery-text" data-i18n="game.songPlaying">Song läuft</div>
+      <div class="mystery-sub" data-i18n="game.songPlayingSub">Der Host spielt den Song ab – hört gemeinsam zu und ordnet ihn ein!</div>
     </div>
     <div class="track-revealed" id="track-revealed">
       <div class="track-art-placeholder" id="track-art-placeholder">🎵</div>
@@ -299,36 +303,34 @@
       <div class="time-label" id="time-label">0:30</div>
     </div>
     <div class="volume-row" id="volume-row" style="display:none">
-      <button class="volume-icon" id="volume-icon" onclick="toggleMute()" aria-label="Stumm schalten">🔊</button>
-      <input type="range" id="volume" class="volume-slider" min="0" max="100" step="1" oninput="setVolume(this.value)" aria-label="Lautstärke">
+      <button class="volume-icon" id="volume-icon" onclick="toggleMute()" data-i18n-title="game.mute">🔊</button>
+      <input type="range" id="volume" class="volume-slider" min="0" max="100" step="1" oninput="setVolume(this.value)" data-i18n-title="game.volume">
       <span class="volume-value" id="volume-value">80</span>
     </div>
     <div id="audio-device-picker" class="device-picker" style="display:none">
       <button class="device-chip" id="device-chip" onclick="toggleDevicePopover()"></button>
       <div class="device-popover" id="device-popover">
         <div class="device-head">
-          <label>Wiedergabe auf</label>
-          <button class="icon-btn device-refresh" onclick="loadDevices()" title="Geräte neu laden" aria-label="Geräte neu laden"></button>
+          <label data-i18n="device.playOn">Wiedergabe auf</label>
+          <button class="icon-btn device-refresh" onclick="loadDevices()" data-i18n-title="device.reload"></button>
         </div>
         <div class="device-list"></div>
       </div>
     </div>
-    <div id="audio-host-message" style="display:none;text-align:center;padding:12px;color:var(--muted);font-size:0.8rem">
-      ▶ Der Host steuert die Musik über Spotify.
-    </div>
+    <div id="audio-host-message" style="display:none;text-align:center;padding:12px;color:var(--muted);font-size:0.8rem" data-i18n="game.hostControls">▶ Der Host steuert die Musik über Spotify.</div>
   </div>
 
   <!-- Guess section (guess modes) -->
   <div class="guess-section" id="guess-section" style="display:none">
     <div class="input-group">
-      <label>Songtitel</label>
-      <input type="text" id="guess-title" placeholder="Titel eingeben…" onkeydown="if(event.key==='Enter')submitGuess()">
+      <label data-i18n="game.songTitle">Songtitel</label>
+      <input type="text" id="guess-title" placeholder="Titel eingeben…" data-i18n-ph="game.titlePh" onkeydown="if(event.key==='Enter')submitGuess()">
     </div>
     <div class="input-group" id="guess-artist-wrap" style="display:none">
-      <label>Interpret</label>
-      <input type="text" id="guess-artist" placeholder="Interpret eingeben…" onkeydown="if(event.key==='Enter')submitGuess()">
+      <label data-i18n="game.artist">Interpret</label>
+      <input type="text" id="guess-artist" placeholder="Interpret eingeben…" data-i18n-ph="game.artistPh" onkeydown="if(event.key==='Enter')submitGuess()">
     </div>
-    <button class="btn-primary" onclick="submitGuess()" style="margin-top:4px">✓ Antwort prüfen</button>
+    <button class="btn-primary" onclick="submitGuess()" style="margin-top:4px" data-i18n="game.checkAnswer">✓ Antwort prüfen</button>
   </div>
 
   <!-- SONGLINE! round (classic) -->
@@ -336,9 +338,9 @@
     <div class="challenge-title">SONGLINE! <span id="challenge-countdown"></span></div>
     <div class="text-muted" id="challenge-text" style="margin:6px 0 12px"></div>
     <div class="flex-row" style="justify-content:center;gap:10px;flex-wrap:wrap">
-      <button class="btn-primary" id="btn-songline" onclick="callSongline()" style="width:auto;background:var(--hot);color:var(--black)" disabled>📣 SONGLINE! (1 🪙)</button>
-      <button class="btn-secondary" id="btn-pass" onclick="passChallenge()">Passen</button>
-      <button class="btn-secondary" id="btn-resolve" onclick="resolveNow()">Jetzt aufdecken</button>
+      <button class="btn-primary" id="btn-songline" onclick="callSongline()" style="width:auto;background:var(--hot);color:var(--black)" disabled data-i18n="game.callSongline">📣 SONGLINE! (1 🪙)</button>
+      <button class="btn-secondary" id="btn-pass" onclick="passChallenge()" data-i18n="game.pass">Passen</button>
+      <button class="btn-secondary" id="btn-resolve" onclick="resolveNow()" data-i18n="game.revealNow">Jetzt aufdecken</button>
     </div>
   </div>
 
@@ -354,25 +356,25 @@
   <div class="guess-section" id="token-guess" style="display:none">
     <div class="text-muted" id="token-hint" style="font-size:0.8rem;margin-bottom:10px"></div>
     <div class="flex-row" style="gap:10px;flex-wrap:wrap">
-      <div class="input-group" style="flex:1;min-width:140px"><input type="text" id="token-title" placeholder="Titel"></div>
-      <div class="input-group" style="flex:1;min-width:140px"><input type="text" id="token-artist" placeholder="Interpret"></div>
-      <div class="input-group" id="token-year-wrap" style="width:110px;display:none"><input type="number" id="token-year" placeholder="Jahr" inputmode="numeric" min="1900" max="2100"></div>
+      <div class="input-group" style="flex:1;min-width:140px"><input type="text" id="token-title" placeholder="Titel" data-i18n-ph="game.titleShort"></div>
+      <div class="input-group" style="flex:1;min-width:140px"><input type="text" id="token-artist" placeholder="Interpret" data-i18n-ph="game.artist"></div>
+      <div class="input-group" id="token-year-wrap" style="width:110px;display:none"><input type="number" id="token-year" placeholder="Jahr" data-i18n-ph="game.yearShort" inputmode="numeric" min="1900" max="2100"></div>
     </div>
   </div>
 
   <!-- Actions (only for the active player) -->
   <div class="action-row" id="action-row">
     <button class="btn-reveal" id="btn-reveal" onclick="revealTrack()">🔍 Song aufdecken</button>
-    <button class="btn-guess" id="btn-guess" onclick="confirmGuess()" disabled>✓ Einordnung bestätigen</button>
+    <button class="btn-guess" id="btn-guess" onclick="confirmGuess()" disabled data-i18n="game.confirm">✓ Einordnung bestätigen</button>
   </div>
 
   <div class="text-muted mt-12" style="text-align:center" id="game-hint">Wähle einen Platz auf deiner Zeitlinie aus</div>
 
   <!-- Skip / Manual add -->
   <div class="mt-20 flex-row" style="justify-content:center;gap:16px">
-    <button class="btn-secondary" id="manual-search-button" onclick="openSearchModal()" style="font-size:0.8rem">🔍 Song manuell suchen</button>
+    <button class="btn-secondary" id="manual-search-button" onclick="openSearchModal()" style="font-size:0.8rem" data-i18n="game.manualSearch">🔍 Song manuell suchen</button>
     <button class="btn-secondary" id="skip-button" onclick="skipTrack()" style="font-size:0.8rem">⏭ Song überspringen</button>
-    <button class="btn-secondary" id="buy-button" onclick="buyCard()" style="font-size:0.8rem;display:none">🛒 Karte kaufen (3 🪙)</button>
+    <button class="btn-secondary" id="buy-button" onclick="buyCard()" style="font-size:0.8rem;display:none" data-i18n="game.buyCard">🛒 Karte kaufen (3 🪙)</button>
   </div>
 </div>
 
@@ -382,9 +384,9 @@
   <div class="winner-name" id="winner-name">–</div>
   <div class="winner-sub" id="winner-sub">hat gewonnen!</div>
   <div class="scores-grid" id="end-scores-grid" style="margin-bottom:32px"></div>
-  <button class="btn-primary" id="btn-rematch" onclick="rematch()" style="max-width:300px;margin:0 auto;display:block">🔁 Nochmal!</button>
-  <p class="text-muted" id="rematch-hint" style="text-align:center;font-size:0.85rem;display:none">Der Host kann direkt eine neue Runde starten.</p>
-  <button class="btn-secondary" onclick="resetGame()" style="max-width:300px;margin:12px auto 0;display:block;width:100%">Zur Lobby</button>
+  <button class="btn-primary" id="btn-rematch" onclick="rematch()" style="max-width:300px;margin:0 auto;display:block" data-i18n="end.rematch">🔁 Nochmal!</button>
+  <p class="text-muted" id="rematch-hint" style="text-align:center;font-size:0.85rem;display:none" data-i18n="end.rematchHint">Der Host kann direkt eine neue Runde starten.</p>
+  <button class="btn-secondary" onclick="resetGame()" style="max-width:300px;margin:12px auto 0;display:block;width:100%" data-i18n="end.toLobby">Zur Lobby</button>
 </div>
 
 <!-- ════════════════════════════════════════════════════════ VERDICT OVERLAY -->
@@ -394,7 +396,7 @@
     <div class="verdict-title" id="verdict-title">Richtig!</div>
     <div class="verdict-sub" id="verdict-sub"></div>
     <div class="verdict-points"><strong id="verdict-pts">+1</strong> <span id="verdict-pts-label">Punkt</span></div>
-    <button class="btn-primary" onclick="closeVerdict()">Weiter →</button>
+    <button class="btn-primary" onclick="closeVerdict()" data-i18n="v.next">Weiter →</button>
   </div>
 </div>
 
@@ -402,54 +404,50 @@
 <div class="verdict-overlay" id="pause-overlay">
   <div class="verdict-box">
     <div class="verdict-icon">⏸</div>
-    <div class="verdict-title">Pause</div>
-    <div class="verdict-sub">Der Host ist gerade nicht verbunden. Das Spiel geht automatisch weiter, sobald er wieder da ist.</div>
-    <button class="btn-secondary" onclick="leaveRound()">Zur Lobby</button>
+    <div class="verdict-title" data-i18n="pause.title">Pause</div>
+    <div class="verdict-sub" data-i18n="pause.text">Der Host ist gerade nicht verbunden. Das Spiel geht automatisch weiter, sobald er wieder da ist.</div>
+    <button class="btn-secondary" onclick="leaveRound()" data-i18n="end.toLobby">Zur Lobby</button>
   </div>
 </div>
 
 <!-- ════════════════════════════════════════════════════════ QR CODE -->
 <div class="modal-overlay" id="qr-modal" onclick="if(event.target===this)closeQr()">
   <div class="modal-box" style="text-align:center">
-    <div class="modal-title">Scannen & mitspielen</div>
-    <img id="qr-img" class="qr-img" alt="QR-Code zum Beitreten">
+    <div class="modal-title" data-i18n="qr.title">Scannen & mitspielen</div>
+    <img id="qr-img" class="qr-img" alt="QR-Code zum Beitreten" data-i18n-alt="qr.alt">
     <div class="lobby-code" id="qr-code" style="margin-top:8px">----</div>
-    <button class="btn-secondary" onclick="closeQr()" style="margin-top:12px">Schließen</button>
+    <button class="btn-secondary" onclick="closeQr()" style="margin-top:12px" data-i18n="common.close">Schließen</button>
   </div>
 </div>
 
 <!-- ════════════════════════════════════════════════════════ SHOW ON TV -->
 <div class="modal-overlay" id="tv-modal" onclick="if(event.target===this)closeTvDialog()">
   <div class="modal-box">
-    <div class="modal-title">Auf dem Fernseher zeigen</div>
+    <div class="modal-title" data-i18n="tv.dialogTitle">Auf dem Fernseher zeigen</div>
     <div class="tv-option" id="tv-cast-option">
-      <button class="btn-primary" onclick="castTv()">📡 Streamen</button>
-      <p class="device-hint">Öffnet den Streamen-Dialog deines Browsers (z.B. Chrome → Chromecast).</p>
+      <button class="btn-primary" onclick="castTv()" data-i18n="tv.cast">📡 Streamen</button>
+      <p class="device-hint" data-i18n="tv.castHint">Öffnet den Streamen-Dialog deines Browsers (z.B. Chrome → Chromecast).</p>
     </div>
     <div class="tv-option">
-      <div class="tv-option-title">Mit TV-Code verbinden</div>
-      <p class="device-hint">Öffne im Browser des Fernsehers <b id="tv-pair-url"></b> und gib den dort angezeigten Code ein.</p>
+      <div class="tv-option-title" data-i18n="tv.codeTitle">Mit TV-Code verbinden</div>
+      <p class="device-hint" data-i18n-html="tv.codeHint">Öffne im Browser des Fernsehers <b id="tv-pair-url"></b> und gib den dort angezeigten Code ein.</p>
       <div class="flex-row" style="gap:8px">
         <input type="text" id="tv-pair-input" class="tv-pair-input" inputmode="numeric" maxlength="4" placeholder="1234" onkeydown="if(event.key==='Enter')linkTv()">
-        <button class="btn-secondary" onclick="linkTv()">Verbinden</button>
+        <button class="btn-secondary" onclick="linkTv()" data-i18n="tv.connect">Verbinden</button>
       </div>
     </div>
     <div class="tv-option">
-      <div class="tv-option-title">Bildschirm übertragen</div>
-      <p class="device-hint">
-        <a href="#" onclick="openTvView();return false">TV-Ansicht öffnen</a> und den Tab bzw. Bildschirm übertragen:
-        Chrome am PC ⋮ → Streamen… · Android: Schnelleinstellungen → Bildschirm übertragen ·
-        iPhone/Mac: AirPlay → Bildschirmsynchronisierung.
-      </p>
+      <div class="tv-option-title" data-i18n="tv.mirrorTitle">Bildschirm übertragen</div>
+      <p class="device-hint" data-i18n-html="tv.mirrorHint"></p>
     </div>
-    <button class="btn-secondary" onclick="closeTvDialog()" style="margin-top:4px">Schließen</button>
+    <button class="btn-secondary" onclick="closeTvDialog()" style="margin-top:4px" data-i18n="common.close">Schließen</button>
   </div>
 </div>
 
 <!-- ════════════════════════════════════════════════════════ TV PAIRING (/tv) -->
 <div id="screen-tv-pair" class="screen tv-pair-screen">
   <div class="login-title">SONG<br>LINE</div>
-  <div class="tv-pair-label">Im Spiel auf <b>„📺 Auf TV zeigen“</b> tippen und diesen Code eingeben:</div>
+  <div class="tv-pair-label" data-i18n-html="tv.pairLabel">Im Spiel auf <b>„📺 Auf TV zeigen“</b> tippen und diesen Code eingeben:</div>
   <div class="tv-pair-code" id="tv-pair-code">····</div>
 </div>
 
@@ -457,8 +455,8 @@
 <div id="screen-tv" class="screen tv-screen">
   <div class="tv-grid">
     <aside class="tv-side">
-      <div class="tv-label">Scannen & mitspielen</div>
-      <img id="tv-qr" class="tv-qr" alt="QR-Code zum Beitreten">
+      <div class="tv-label" data-i18n="tvv.join">Scannen & mitspielen</div>
+      <img id="tv-qr" class="tv-qr" alt="QR-Code zum Beitreten" data-i18n-alt="qr.alt">
       <div class="tv-code" id="tv-code">----</div>
       <div class="tv-url" id="tv-url"></div>
     </aside>
@@ -473,14 +471,14 @@
 <!-- ════════════════════════════════════════════════════════ SEARCH MODAL -->
 <div class="modal-overlay" id="search-modal">
   <div class="modal-box">
-    <div class="modal-title">Song suchen</div>
+    <div class="modal-title" data-i18n="search.title">Song suchen</div>
     <div class="flex-row">
-      <input type="text" id="search-input" placeholder="Titel oder Künstler..." style="flex:1;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 14px;font-size:0.9rem;outline:none;font-family:inherit" onkeydown="if(event.key==='Enter')doSearch()">
-      <button class="btn-secondary" onclick="doSearch()">Suchen</button>
+      <input type="text" id="search-input" placeholder="Titel oder Künstler..." data-i18n-ph="search.ph" style="flex:1;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 14px;font-size:0.9rem;outline:none;font-family:inherit" onkeydown="if(event.key==='Enter')doSearch()">
+      <button class="btn-secondary" onclick="doSearch()" data-i18n="search.go">Suchen</button>
     </div>
     <div class="search-results" id="search-results"></div>
     <div class="mt-20 flex-row" style="justify-content:flex-end">
-      <button class="btn-secondary" onclick="closeSearchModal()">Abbrechen</button>
+      <button class="btn-secondary" onclick="closeSearchModal()" data-i18n="common.cancel">Abbrechen</button>
     </div>
   </div>
 </div>
@@ -489,6 +487,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="/socket.io/socket.io.js"></script>
+<script src="/i18n.js"></script>
 <script src="/effects.js"></script>
 <script src="/app.js"></script>
 <script src="/tv.js"></script>

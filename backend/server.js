@@ -178,6 +178,7 @@ function lobbyView(lobby) {
   };
 }
 
+// Messages for players are sent as { key, params } and translated on each client (see frontend/public/i18n.js)
 function broadcast(lobby, event, payload = {}) {
   io.to(lobby.code).emit(event, { ...payload, lobby: lobbyView(lobby) });
   persistence.schedule(lobbies);
@@ -264,7 +265,7 @@ async function loadNextTrack(lobby) {
   if (lobby.sourceType === 'playlist' && lobby.playlistTracks.length) {
     const track = takeRandomTrack(lobby);
     if (!track) {
-      io.to(lobby.code).emit('game:error', { message: 'Alle Playlist-Songs wurden gespielt!' });
+      io.to(lobby.code).emit('game:error', { key: 'err.allPlayed' });
       return;
     }
     await resolveYear(lobby, track);
@@ -411,7 +412,7 @@ function removePlayer(lobby, player) {
     backToLobby(lobby);
     emitUpdate(lobby);
     io.to(lobby.code).emit('game:back-to-lobby');
-    io.to(lobby.code).emit('game:error', { message: 'Der Host hat das Spiel verlassen' });
+    io.to(lobby.code).emit('game:error', { key: 'err.hostLeft' });
   } else if (wasCurrent && (!lobby.teamMode || !unitPlayable(lobby, unit))) {
     // Unit is empty – the next one gets a new song
     if (lobby.teamMode) advanceTurn(lobby);
@@ -487,16 +488,16 @@ io.on('connection', (socket) => {
     const upper = String(code || '').toUpperCase();
     const lobby = lobbies.get(upper);
     const name = String(playerName || '').trim().slice(0, 20);
-    if (!lobby) { socket.emit('lobby:error', { message: 'Lobby nicht gefunden' }); return; }
-    if (!name) { socket.emit('lobby:error', { message: 'Bitte Namen eingeben' }); return; }
+    if (!lobby) { socket.emit('lobby:error', { key: 'err.lobbyNotFound' }); return; }
+    if (!name) { socket.emit('lobby:error', { key: 'err.nameRequired' }); return; }
     if (lobby.players.find(p => p.name.toLowerCase() === name.toLowerCase())) {
-      socket.emit('lobby:error', { message: 'Name bereits vergeben' }); return;
+      socket.emit('lobby:error', { key: 'err.nameTaken' }); return;
     }
     await addPlayer(lobby, socket, name, playerKey);
     socket.join(upper);
     socket.emit('lobby:joined', { code: upper, lobby: lobbyView(lobby) });
     emitUpdate(lobby);
-    if (lobby.status === 'playing') io.to(upper).emit('game:info', { message: `${name} steigt ins Spiel ein` });
+    if (lobby.status === 'playing') io.to(upper).emit('game:info', { key: 'info.joined', params: { name } });
   });
 
   // Reconnect after reload/connection loss/server restart: player keeps everything
@@ -540,7 +541,7 @@ io.on('connection', (socket) => {
   // TV/projector view: watches without playing
   socket.on('lobby:watch', ({ code }) => {
     const lobby = lobbies.get(String(code || '').toUpperCase());
-    if (!lobby) { socket.emit('lobby:error', { message: 'Lobby nicht gefunden' }); return; }
+    if (!lobby) { socket.emit('lobby:error', { key: 'err.lobbyNotFound' }); return; }
     socket.join(lobby.code);
     socket.emit('tv:state', { lobby: lobbyView(lobby) });
   });
@@ -554,7 +555,7 @@ io.on('connection', (socket) => {
     const wasCurrent = unit === currentUnit(lobby);
     player.away = true;
     emitUpdate(lobby);
-    io.to(code).emit('game:info', { message: `${player.name} macht Pause` });
+    io.to(code).emit('game:info', { key: 'info.away', params: { name: player.name } });
     if (lobby.paused) return;
     if (wasCurrent && !unitPlayable(lobby, unit)) {
       advanceTurn(lobby);
@@ -571,7 +572,7 @@ io.on('connection', (socket) => {
     const nobodyPlaying = !unitList(lobby).some(u => unitPlayable(lobby, u));
     player.away = false;
     emitUpdate(lobby);
-    io.to(code).emit('game:info', { message: `${player.name} ist wieder dabei` });
+    io.to(code).emit('game:info', { key: 'info.back', params: { name: player.name } });
     if (typeof reply === 'function') reply({ ok: true, lobby: lobbyView(lobby) });
     // Everyone was sitting out → continue with the returning player
     if (nobodyPlaying && !lobby.paused) {
@@ -649,10 +650,10 @@ io.on('connection', (socket) => {
       try {
         lobby.playlistTracks = await fetchPlaylistTracks(lobby.playlistId, token);
         if (!lobby.playlistTracks.length) {
-          socket.emit('lobby:error', { message: 'Keine Songs in der Playlist' }); return;
+          socket.emit('lobby:error', { key: 'err.emptyPlaylist' }); return;
         }
       } catch (e) {
-        socket.emit('lobby:error', { message: 'Playlist konnte nicht geladen werden' }); return;
+        socket.emit('lobby:error', { key: 'err.playlistLoad' }); return;
       }
     }
 
@@ -733,7 +734,7 @@ io.on('connection', (socket) => {
     if (!Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex > cur.timeline.length) return;
 
     const track = lobby.currentTrack;
-    if (!trackYear(track)) { socket.emit('lobby:error', { message: 'Kein Erscheinungsjahr' }); return; }
+    if (!trackYear(track)) { socket.emit('lobby:error', { key: 'err.noYear' }); return; }
 
     const t = lobby.turn;
     t.slotIndex = slotIndex;
@@ -758,7 +759,7 @@ io.on('connection', (socket) => {
     const cur = currentUnit(lobby);
     if (!Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex > cur.timeline.length) return;
     if (slotIndex === t.slotIndex || t.challenges.some(c => c.slotIndex === slotIndex)) {
-      socket.emit('lobby:error', { message: 'Dieser Platz ist schon belegt' }); return;
+      socket.emit('lobby:error', { key: 'err.slotTaken' }); return;
     }
     unit.tokens--;
     t.challenges.push({ unit, by: player, slotIndex });
@@ -792,7 +793,7 @@ io.on('connection', (socket) => {
     if (cur.tokens < BUY_CARD_COST) return;
     cur.tokens -= BUY_CARD_COST;
     const track = await drawCard(lobby);
-    if (!track) { cur.tokens += BUY_CARD_COST; socket.emit('lobby:error', { message: 'Keine Karten mehr im Stapel' }); return; }
+    if (!track) { cur.tokens += BUY_CARD_COST; socket.emit('lobby:error', { key: 'err.deckEmpty' }); return; }
     addCard(cur, track);
     broadcast(lobby, 'game:card-bought', { playerName: cur.name, card: timelineCard(track) });
     checkWinner(lobby);
@@ -846,11 +847,11 @@ io.on('connection', (socket) => {
       // Active unit pays 1 token for a new song; the host may skip for free (e.g. song unavailable)
       if (lobby.turn?.phase !== 'placing') return;
       if (mine) {
-        if (cur.tokens < 1) { socket.emit('lobby:error', { message: 'Du brauchst einen Token zum Überspringen' }); return; }
+        if (cur.tokens < 1) { socket.emit('lobby:error', { key: 'err.needToken' }); return; }
         cur.tokens--;
-        io.to(code).emit('game:info', { message: `${cur.name} setzt einen Token ein und überspringt den Song` });
+        io.to(code).emit('game:info', { key: 'info.skipToken', params: { name: cur.name } });
       } else {
-        io.to(code).emit('game:info', { message: 'Der Host hat den Song übersprungen' });
+        io.to(code).emit('game:info', { key: 'info.hostSkipped' });
       }
       loadNextTrack(lobby);
       return;
