@@ -1648,3 +1648,150 @@ body.mobile .round-banner .btn-primary { width: 100%; padding: 13px; }
 body.mobile #action-row:has(.btn-guess[style*="none"]) .btn-reveal { flex: 1; }
 body.mobile #action-row .btn-reveal { font-size: 0.88rem; white-space: nowrap; }
 body.mobile #challenge-panel .challenge-actions #btn-songline { flex: 1.4; white-space: nowrap; font-size: 0.92rem; }
+
+/* ══════════════════════════════════════════════════════════════
+   START MENU – DESKTOP TITLE SCREEN (phones keep the stacked menu)
+   ══════════════════════════════════════════════════════════════ */
+.menu-bg, .menu-steps, .menu-or { display: none; }
+
+body:not(.mobile)[data-screen="menu"] header { background: transparent; border-bottom-color: transparent; }
+body:not(.mobile)[data-screen="menu"] header .logo { visibility: hidden; }
+
+body:not(.mobile) #screen-menu.active {
+  max-width: 1200px;
+  min-height: calc(100vh - 72px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) 430px;
+  grid-template-rows: 1fr auto;
+  align-items: center;
+  column-gap: 72px;
+  padding: 24px 48px 28px;
+}
+
+/* Background: colour glows + drifting year cards */
+body:not(.mobile) .menu-bg { display: block; position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.menu-glow {
+  position: absolute;
+  width: 640px; height: 640px;
+  border-radius: 50%;
+  filter: blur(100px);
+  animation: glow-drift 26s ease-in-out infinite alternate;
+}
+.menu-glow-a { background: #a855f7; left: -180px; top: -160px; opacity: 0.32; }
+.menu-glow-b { background: #ec4899; right: -200px; bottom: -220px; opacity: 0.22; animation-delay: -13s; }
+@keyframes glow-drift { to { transform: translate(90px, 70px) scale(1.12); } }
+.float-card {
+  position: absolute;
+  width: 94px;
+  padding: 12px 11px;
+  border-radius: 12px;
+  background: rgba(35, 29, 61, 0.55);
+  border: 1px solid rgba(183, 124, 255, 0.16);
+  opacity: 0.5;
+  transform: rotate(var(--r));
+  animation: card-float 18s ease-in-out infinite;
+}
+.float-card b { display: block; font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 1px; color: var(--accent); line-height: 1; }
+.float-card i { display: block; height: 5px; margin-top: 7px; border-radius: 3px; background: rgba(255, 255, 255, 0.12); }
+.float-card i + i { width: 62%; }
+@keyframes card-float {
+  0%, 100% { transform: translateY(0) rotate(var(--r)); }
+  50% { transform: translateY(-28px) rotate(calc(var(--r) * -1)); }
+}
+
+/* Left: title stage */
+body:not(.mobile) .menu-hero { text-align: left; margin: 0; }
+body:not(.mobile) .menu-hero::before { left: 32%; top: 34%; width: 560px; height: 300px; opacity: 0.45; }
+body:not(.mobile) .menu-eq { justify-content: flex-start; height: 46px; gap: 6px; margin-bottom: 18px; }
+body:not(.mobile) .menu-eq i { width: 9px; }
+body:not(.mobile) .menu-hero .login-title { font-size: clamp(5rem, 9vw, 8.8rem); letter-spacing: 10px; line-height: 0.85; }
+body:not(.mobile) .menu-hero .login-title br { display: none; }
+body:not(.mobile) .menu-tagline { font-size: 1.35rem; margin-top: 20px; color: var(--text); opacity: 0.85; }
+body:not(.mobile) .menu-steps { display: flex; gap: 14px; list-style: none; margin: 44px 0 0; padding: 0; }
+.menu-steps li {
+  flex: 1;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(26, 21, 48, 0.6);
+  border: 1px solid var(--border);
+}
+.menu-step-icon { font-size: 1.5rem; line-height: 1; }
+.menu-steps b { display: block; font-size: 0.95rem; margin-bottom: 3px; }
+.menu-steps span { font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
+
+/* Right: glass panel with the actions */
+body:not(.mobile) .menu-panel {
+  padding: 28px;
+  border-radius: 24px;
+  background: rgba(26, 21, 48, 0.72);
+  border: 1px solid rgba(183, 124, 255, 0.22);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+body:not(.mobile) .menu-name { margin-bottom: 16px; }
+body:not(.mobile) .menu-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+body:not(.mobile) .menu-card-host,
+body:not(.mobile) .menu-card-join,
+body:not(.mobile) .menu-or { grid-column: 1 / -1; }
+
+body:not(.mobile) .menu-card-host {
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  column-gap: 14px;
+  row-gap: 2px;
+  align-items: center;
+  padding: 20px 22px;
+  position: relative;
+  overflow: hidden;
+}
+body:not(.mobile) .menu-card-host .menu-icon { grid-row: span 2; font-size: 2.1rem; }
+body:not(.mobile) .menu-card-host .menu-card-title { font-size: 1.3rem; }
+/* Light sweep on hover */
+body:not(.mobile) .menu-card-host::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.22) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.7s ease;
+}
+body:not(.mobile) .menu-card-host:hover::after { transform: translateX(120%); }
+
+body:not(.mobile) .menu-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 2px 0;
+}
+body:not(.mobile) .menu-or::before,
+body:not(.mobile) .menu-or::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+body:not(.mobile) .menu-card-join { padding: 16px 18px; background: var(--surface); }
+body:not(.mobile) .menu-card-join .menu-icon { display: none; }
+body:not(.mobile) .menu-card-small { padding: 14px 16px; }
+body:not(.mobile) .menu-card-small .menu-card-title { font-size: 0.92rem; }
+
+body:not(.mobile) .menu-footer { grid-column: 1 / -1; margin-top: 28px; }
+
+/* Smaller desktop windows: stack stage above the panel */
+@media (max-width: 1000px) {
+  body:not(.mobile) #screen-menu.active { grid-template-columns: 1fr; row-gap: 32px; max-width: 640px; padding-top: 8px; }
+  body:not(.mobile) .menu-hero { text-align: center; }
+  body:not(.mobile) .menu-eq { justify-content: center; }
+  body:not(.mobile) .menu-steps { margin-top: 28px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-glow, .float-card { animation: none; }
+}
+body:not(.mobile) .menu-card-small { flex-direction: column; align-items: flex-start; gap: 4px; }
+body:not(.mobile) .menu-card-small .menu-icon { font-size: 1.4rem; margin-bottom: 2px; }
+body:not(.mobile) .menu-card-small .menu-card-sub { flex-basis: auto; }

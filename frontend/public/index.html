@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
 </head>
-<body>
+<body data-screen="menu">
 
 <!-- Header -->
 <header>
@@ -42,12 +42,32 @@
 
 <!-- ════════════════════════════════════════════════════════ START MENU -->
 <div id="screen-menu" class="screen menu-screen active">
+  <!-- Desktop only: drifting year cards and colour glows in the background -->
+  <div class="menu-bg" aria-hidden="true">
+    <div class="menu-glow menu-glow-a"></div>
+    <div class="menu-glow menu-glow-b"></div>
+    <div class="float-card" style="left:12%;top:18%;animation-delay:0s;--r:-8deg"><b>1965</b><i></i><i></i></div>
+    <div class="float-card" style="left:78%;top:12%;animation-delay:-4s;--r:6deg"><b>1983</b><i></i><i></i></div>
+    <div class="float-card" style="left:88%;top:62%;animation-delay:-9s;--r:-5deg"><b>2004</b><i></i><i></i></div>
+    <div class="float-card" style="left:6%;top:70%;animation-delay:-6s;--r:7deg"><b>1971</b><i></i><i></i></div>
+    <div class="float-card" style="left:46%;top:86%;animation-delay:-12s;--r:-3deg"><b>1999</b><i></i><i></i></div>
+    <div class="float-card" style="left:62%;top:4%;animation-delay:-2s;--r:4deg"><b>2016</b><i></i><i></i></div>
+    <div class="float-card" style="left:28%;top:92%;animation-delay:-15s;--r:5deg"><b>1958</b><i></i><i></i></div>
+    <div class="float-card" style="left:96%;top:36%;animation-delay:-7s;--r:-7deg"><b>1990</b><i></i><i></i></div>
+  </div>
+
   <div class="menu-hero">
     <div class="menu-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="login-title">SONG<br>LINE</div>
     <p class="menu-tagline" data-i18n="menu.tagline">Hör rein. Schätz das Jahr. Bau deine Zeitlinie.</p>
+    <ol class="menu-steps">
+      <li><span class="menu-step-icon">🎧</span><div><b data-i18n="menu.step1">Hör rein</b><span data-i18n="menu.step1Text">Ein Song läuft für alle.</span></div></li>
+      <li><span class="menu-step-icon">📅</span><div><b data-i18n="menu.step2">Ordne ein</b><span data-i18n="menu.step2Text">Vor oder nach deinen Karten?</span></div></li>
+      <li><span class="menu-step-icon">🏆</span><div><b data-i18n="menu.step3">Gewinne</b><span data-i18n="menu.step3Text">Wer zuerst die volle Zeitlinie hat.</span></div></li>
+    </ol>
   </div>
 
+  <div class="menu-panel">
   <div class="menu-name">
     <label for="home-name" data-i18n="menu.name">Dein Name</label>
     <input type="text" id="home-name" placeholder="Wie heißt du?" data-i18n-ph="menu.namePh" maxlength="20" autocomplete="nickname"
@@ -60,6 +80,8 @@
       <span class="menu-card-title" data-i18n="menu.host">Spiel hosten</span>
       <span class="menu-card-sub" id="host-sub">Mit Spotify Premium – du bestimmst die Musik</span>
     </button>
+
+    <div class="menu-or" data-i18n="menu.or">oder</div>
 
     <div class="menu-card menu-card-join">
       <span class="menu-icon">🎟️</span>
@@ -83,6 +105,7 @@
       <span class="menu-card-title" data-i18n="menu.rules">Spielregeln</span>
       <span class="menu-card-sub" data-i18n="menu.rulesSub">Modi, Tokens &amp; SONGLINE!</span>
     </button>
+  </div>
   </div>
 
   <div class="menu-footer" id="menu-account"></div>

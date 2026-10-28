@@ -855,6 +855,7 @@ function syncAudioPlaybackUI() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + id).classList.add('active');
+  document.body.dataset.screen = id;
   if (id === 'lobby' || id === 'game') keepScreenOn();
 }
 
@@ -880,7 +881,7 @@ const mobileQuery = matchMedia('(pointer: coarse) and (max-width: 820px), (max-w
 function isMobile() { return mobileQuery.matches; }
 function syncDeviceClass() { document.body.classList.toggle('mobile', isMobile()); }
 mobileQuery.addEventListener?.('change', syncDeviceClass);
-window.addEventListener('DOMContentLoaded', syncDeviceClass);
+syncDeviceClass(); // app.js runs at the end of <body>, so set it right away (no desktop flash on phones)
 
 // On phones, bring the part that needs input into view
 function scrollToAction(id) {
