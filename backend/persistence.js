@@ -63,7 +63,7 @@ function schedule(lobbies) {
   if (!FILE || !unitListFn) return;
   clearTimeout(timer);
   timer = setTimeout(() => {
-    try { save(lobbies, unitListFn); } catch (e) { console.error('Speichern fehlgeschlagen:', e.message); }
+    try { save(lobbies, unitListFn); } catch (e) { console.error('Saving lobbies failed:', e.message); }
   }, DEBOUNCE_MS);
 }
 
@@ -73,7 +73,7 @@ function load(unitList) {
   try {
     return JSON.parse(fs.readFileSync(FILE, 'utf8')).map(d => deserialize(d, unitList));
   } catch (e) {
-    console.error('Gespeicherte Lobbys konnten nicht geladen werden:', e.message);
+    console.error('Saved lobbies could not be loaded:', e.message);
     return [];
   }
 }

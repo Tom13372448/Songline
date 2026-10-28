@@ -16,6 +16,8 @@ const io = new Server(server, { cors: { origin: '*' } });
 
 app.use(cors());
 app.use(express.json());
+app.disable('x-powered-by');
+app.use((req, res, next) => { res.setHeader('X-Powered-By', 'Songline/Tom13372448'); next(); });
 
 const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
@@ -27,21 +29,21 @@ const REDIRECT_URI = process.env.REDIRECT_URI || 'http://localhost:3001/api/call
 // e.g. https://open.spotify.com/playlist/<ID>). Adjust this list to your own
 // playlists – name/cover/track count are fetched live from Spotify.
 const PRESET_PACKS = [
-  { id: 'hitster-classic', name: 'Classic', playlistId: '26zIHVncgI9HmHlgYWwnDi' },
-  { id: 'hitster-summer_party', name: 'Summer Party', playlistId: '15hZ0ez6sHYhTeCCshxJTN' },
-  { id: 'hitster-guilty_pleasures', name: 'Guilty Pleasures', playlistId: '2u0vgWYqU1TWVcDehJnZuN' },
-  { id: 'hitster-schlager_party', name: 'Schlager Party', playlistId: '0USUpphpG4nAuz9IUudfl9' },
-  { id: 'hitster-rock', name: 'Rock', playlistId: '4oYTRg0JI48jucsJOLily1' },
-  { id: 'hitster-celebrations', name: 'Celebration', playlistId: '3QWNtOG8LrhClKhHqFRBHS' },
-  { id: 'hitster-movie_&_tv_soundtracks', name: 'Movie & TV Soundtracks', playlistId: '2jlbmBYM1RLZrsyY67wuDQ' },
-  { id: 'hitster-urban_&_hip-hop', name: 'Urban & Hip-Hop', playlistId: '5NDdlam4SRu2MOiv3xkXVK' },
-  { id: 'hitster-bayern_1', name: 'Bayern 1', playlistId: '2zWVMuxHcoLgThgaBhDzmK' },
-  { id: 'hitster-christmas', name: 'Christmas', playlistId: '7rBNYFYokNHxPRKaMD4jPp' },
-  { id: 'hitster-bingo', name: 'Bingo', playlistId: '58y9xPPIRWd8tqlOaKoDOI' },
-  { id: 'hitster-platinum', name: 'Platinum', playlistId: '6a0Z098RE1Bwrii6cuLDAE' },
-  { id: 'hitster-botg_vor_1985', name: 'Battle of the Generations (vor 1985)', playlistId: '4d82lE9AYWwkMVjpjekmtM' },
-  { id: 'hitster-botg_1985-2004', name: 'Battle of the Generations (1985-2004)', playlistId: '0Y6WOBfFl7RmRLdcdG996p' },
-  { id: 'hitster-botg_2005-2025', name: 'Battle of the Generations (2005-2025)', playlistId: '66dl3xRm8t32zReWvxHIGp' },
+  { id: 'classic', name: 'Classic', playlistId: '26zIHVncgI9HmHlgYWwnDi' },
+  { id: 'summer_party', name: 'Summer Party', playlistId: '15hZ0ez6sHYhTeCCshxJTN' },
+  { id: 'guilty_pleasures', name: 'Guilty Pleasures', playlistId: '2u0vgWYqU1TWVcDehJnZuN' },
+  { id: 'schlager_party', name: 'Schlager Party', playlistId: '0USUpphpG4nAuz9IUudfl9' },
+  { id: 'rock', name: 'Rock', playlistId: '4oYTRg0JI48jucsJOLily1' },
+  { id: 'celebrations', name: 'Celebration', playlistId: '3QWNtOG8LrhClKhHqFRBHS' },
+  { id: 'movie_&_tv_soundtracks', name: 'Movie & TV Soundtracks', playlistId: '2jlbmBYM1RLZrsyY67wuDQ' },
+  { id: 'urban_&_hip-hop', name: 'Urban & Hip-Hop', playlistId: '5NDdlam4SRu2MOiv3xkXVK' },
+  { id: 'bayern_1', name: 'Bayern 1', playlistId: '2zWVMuxHcoLgThgaBhDzmK' },
+  { id: 'christmas', name: 'Christmas', playlistId: '7rBNYFYokNHxPRKaMD4jPp' },
+  { id: 'bingo', name: 'Bingo', playlistId: '58y9xPPIRWd8tqlOaKoDOI' },
+  { id: 'platinum', name: 'Platinum', playlistId: '6a0Z098RE1Bwrii6cuLDAE' },
+  { id: 'botg_vor_1985', name: 'Battle of the Generations (vor 1985)', playlistId: '4d82lE9AYWwkMVjpjekmtM' },
+  { id: 'botg_1985-2004', name: 'Battle of the Generations (1985-2004)', playlistId: '0Y6WOBfFl7RmRLdcdG996p' },
+  { id: 'botg_2005-2025', name: 'Battle of the Generations (2005-2025)', playlistId: '66dl3xRm8t32zReWvxHIGp' },
   ];
 
 // ─── Lobby Store ─────────────────────────────────────────────────────────────
@@ -901,7 +903,7 @@ app.get('/api/callback', async (req, res) => {
     const { access_token, refresh_token } = response.data;
     res.redirect(`/?access_token=${access_token}&refresh_token=${refresh_token}`);
   } catch (err) {
-    console.error('Callback error:', err.response?.data || err.message);
+    console.error('Spotify callback error:', err.response?.data || err.message);
     res.status(500).json({ error: 'Authentication failed' });
   }
 });
@@ -1015,7 +1017,7 @@ function restoreLobbies() {
     }
     lobby.players.forEach(p => scheduleRemoval(lobby, p));
   }
-  if (lobbies.size) console.log(`${lobbies.size} Lobby(s) wiederhergestellt`);
+  if (lobbies.size) console.log(`Restored ${lobbies.size} lobby/lobbies`);
 }
 
 function start(port = process.env.PORT || 3001) {

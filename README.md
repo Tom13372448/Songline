@@ -1,137 +1,157 @@
-# 🎵 SONGLINE – The Music Timeline Quiz
+# 🎵 SONGLINE – The Music Timeline Party Game
 
-A self-hosted party game for your home network: a song plays, and you place it on your timeline by release year.
-Runs on a Raspberry Pi (or any Docker host) and is played in the browser on phones, tablets and laptops.
+**Listen. Guess the year. Build your timeline.**
 
-> The game is available in **German and English** – every player picks their own language (DE/EN switch in the header).
-> Inspired by the card game HITSTER – this is an unofficial fan project and not affiliated with its publisher.
+Songline is a self-hosted party game for your home network. A song plays, and you place it on your timeline by release year – before, between or after the cards you already have. First to fill their timeline wins.
 
----
+Everyone plays in the browser on their phone, tablet or laptop. Only the host needs Spotify Premium; all other players join by scanning a QR code – no account, no app.
 
-## Features
-
-- **Classic mode** following the original rules (start card, tokens, SONGLINE! challenge, buying cards) in three variants:
-  **Original**, **Pro** (title + artist required) and **Expert** (additionally the exact year)
-- **Guess modes**: Easy (title only) and Hard (title + artist), typo-tolerant with suggestions while typing
-- **Team mode** with 2–4 teams – any team member may play for their team
-- **Only the host needs Spotify Premium** – everyone else joins without a Spotify account
-- **Playback device selection**: play in the host's browser or on any Spotify Connect device (phone, PC, smart speaker, TV)
-- **Volume control** with gentle fade-out on reveal
-- **TV view** for a TV/projector: all timelines, countdown, reveal and a QR code to join.
-  Bring it to the TV via **TV code** (open `https://<Your_IP_Address>/tv` in the TV's browser and enter the code in the game),
-  **casting** (Chrome cast dialog) or screen mirroring
-- **QR code & invite link**, **joining running games**, **"Play again!"** with the same players and settings
-- **Back to lobby** during a round without losing your score – rejoin any time
-- **Reconnect** after a reload or Wi-Fi drop; if the host disconnects, the game pauses until they return
-- Running games **survive a server restart** (stored in `./data/`)
-- Release years: instead of remaster/best-of years, the earliest release of the song is used
-- Host can **close the lobby** for everyone
-- **German & English** – each player chooses their language; server messages are translated on every device
+> 🇩🇪 🇬🇧 The game is available in German and English – every player picks their own language.
+>
+> Inspired by the card game HITSTER. Songline is an unofficial fan project and not affiliated with or endorsed by its publisher or by Spotify.
 
 ---
 
-## Requirements
+## ✨ Features
 
-- Docker with Docker Compose
-- A Spotify account with **Premium** for the host
-- A Spotify app from the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) (Client ID & Secret)
+**Game modes**
+- **Classic** – place songs on your timeline, following the original rules: start card, tokens, the **SONGLINE!** challenge (steal a card from someone who placed it wrong) and buying cards. Three variants: **Original**, **Pro** (title + artist required) and **Expert** (exact year too).
+- **Guess – Easy / Hard** – guess the title (and artist). Typo-tolerant, with suggestions while typing.
+- **Teams** – 2–4 teams with a shared timeline; any team member may play for their team.
+
+**Party features**
+- **TV view** for a TV or projector: whose turn it is, the active timeline, SONGLINE! countdown, reveal with cover art, leaderboard and podium.
+- **Join via QR code** or invite link – also into running games.
+- **Play on any speaker**: the host's browser or any Spotify Connect device (phone, PC, smart speaker, TV), with volume control and fade-out.
+- **"Play again!"** with the same players, teams and settings – without repeating songs.
+- **Phone-friendly**: dedicated mobile layout with large tap targets and a thumb action bar.
+
+**Robust**
+- Reconnects after reloads or Wi-Fi drops; players can step out to the lobby and rejoin without losing their score.
+- If the host disconnects, the game pauses until they're back. Running games even survive a server restart.
+- Uses the **earliest release year** of a song instead of the year of a remaster or best-of album.
 
 ---
 
-## Quick start (recommended)
+## 📋 Requirements
 
+- A computer in your home network that stays on while you play – e.g. a **Raspberry Pi**, a home server or a laptop (Linux, macOS or Windows with WSL)
+- **Docker** with **Docker Compose** ([install Docker](https://docs.docker.com/get-docker/))
+- A **Spotify Premium** account for the host
+- A free **Spotify developer app** (for the Client ID and Client Secret) – see below
+
+---
+
+## 🚀 Quick start
+
+### 1. Create a Spotify app
+1. Open the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and log in.
+2. **Create app** – any name/description; tick **Web API** and **Web Playback SDK**.
+3. Note the **Client ID** and **Client Secret** (Settings).
+4. The Redirect URI is added in step 3 below.
+
+### 2. Get the code and run the setup
 ```bash
-git clone <your-repository-url> songline
+git clone https://github.com/<your-username>/songline.git
 cd songline
 ./setup.sh
 ```
+The script detects your IP address, asks for the Spotify credentials, creates the `.env` file and a self-signed HTTPS certificate, and starts the containers.
 
-The script automatically:
-- detects the server's IP address
-- asks for your Spotify credentials
-- creates the `.env` file
-- generates a self-signed SSL certificate (valid for 365 days)
-- builds and starts the Docker containers
+### 3. Add the Redirect URI
+In your Spotify app → **Settings** → **Redirect URIs** add exactly:
+```
+https://<Your_IP_Address>/api/callback
+```
+(the setup script shows the exact address)
+
+### 4. Play
+Open `https://<Your_IP_Address>` on any device in your network.
+The first visit shows a security warning because the certificate is self-signed → **Advanced** → **Proceed / Accept the risk** (once per device).
 
 ---
 
-## Manual setup
+## 🎮 How to play
 
-### 1. Find your IP address
-```bash
-hostname -I
-# e.g. <Your_IP_Address>
-```
+1. **Host:** enter your name and tap **Host a game** – you'll log in with Spotify once.
+2. **Players:** scan the QR code (or open the address and enter the 4-letter code).
+3. **Host:** choose mode, music (preset play pack, your own Spotify playlist or manual search) and the playback device – then **Start game**.
+4. Optional: open **Show on TV** to put the TV view on a big screen.
 
-### 2. Create the SSL certificate
+The full rules are in the game under **How to play**.
+
+---
+
+## 🛠 Manual setup (without the script)
+
 ```bash
+# 1. Certificate (replace <Your_IP_Address>)
 mkdir -p certs
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout certs/key.pem \
-  -out certs/cert.pem \
-  -subj "/CN=<Your_IP_Address>" \
-  -addext "subjectAltName=IP:<Your_IP_Address>"
-```
+  -keyout certs/key.pem -out certs/cert.pem \
+  -subj "/CN=<Your_IP_Address>" -addext "subjectAltName=IP:<Your_IP_Address>"
 
-### 3. Create the `.env` file
-```bash
+# 2. Configuration
 cp .env.example .env
-nano .env
-```
-Fill in:
-```
-SPOTIFY_CLIENT_ID=your_client_id
-SPOTIFY_CLIENT_SECRET=your_client_secret
-REDIRECT_URI=https://<Your_IP_Address>/api/callback
-```
+#   then edit .env:
+#   SPOTIFY_CLIENT_ID=your_client_id
+#   SPOTIFY_CLIENT_SECRET=your_client_secret
+#   REDIRECT_URI=https://<Your_IP_Address>/api/callback
 
-### 4. Configure the Spotify app
-- Open the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
-- Your app → **Settings** → **Redirect URIs**
-- Add: `https://<Your_IP_Address>/api/callback`
-- Save
-- While the app is in development mode, add the Spotify accounts of your hosts under **User Management**
-
-### 5. Start
-```bash
+# 3. Start
 docker compose up --build -d
 ```
 
-### 6. Open in the browser
-```
-https://<Your_IP_Address>
-```
-→ Accept the security warning once (**Advanced** → **Accept the risk**), since the certificate is self-signed.
+---
+
+## ⚙️ Customizing
+
+- **Preset play packs:** edit `PRESET_PACKS` at the top of [`backend/server.js`](backend/server.js). Each entry is a Spotify playlist ID (from the share link `https://open.spotify.com/playlist/<ID>`); name, cover and song count are loaded from Spotify.
+- **Game rules:** start tokens, max tokens, card price and SONGLINE! countdown are constants at the top of `backend/server.js`.
+- **Translations:** all texts live in [`frontend/public/i18n.js`](frontend/public/i18n.js) – add another language by adding a block.
+- **Colours:** design tokens are at the top of [`frontend/public/styles.css`](frontend/public/styles.css).
 
 ---
 
-## How to play
+## 🧰 Maintenance
 
-1. The host enters their name, taps **Host a game** and logs in with Spotify.
-2. Everyone else opens `https://<Your_IP_Address>`, enters a name and the 4-letter lobby code – or scans the QR code.
-3. The host picks a mode, a music source (preset packs, own playlist or manual search) and the playback device, then starts the game.
-
-The rules are also explained in the game's start menu (**How to play**).
+| Task | Command |
+|------|---------|
+| Update after code changes | `docker compose up --build -d` |
+| Apply changes to `.env` | `docker compose up -d` (a plain `restart` does not reload it) |
+| View logs | `docker compose logs -f` |
+| Renew the certificate (after 365 days) | `./renew-cert.sh` |
+| Stop | `docker compose down` |
+| Run the tests | `docker run --rm -v "$PWD/backend":/app -w /app node:20-alpine sh -c "npm install && npm test"` |
 
 ---
 
-## Architecture
+## ❓ Troubleshooting
+
+**Spotify login fails with `INVALID_CLIENT` / "Invalid redirect URI"**
+The Redirect URI in your Spotify app must match `REDIRECT_URI` in `.env` exactly – including `https://` and `/api/callback`.
+
+**Spotify login fails with "Invalid client secret"**
+The secret in `.env` is outdated (e.g. after rotating it in the dashboard). Update `.env` and run `docker compose up -d`.
+
+**Only my own account can log in as host**
+New Spotify apps run in *development mode*: add the Spotify accounts of your hosts under **User Management** in the dashboard.
+
+**No sound / "Spotify Premium required"**
+The host needs Spotify Premium. If you play on a Spotify Connect device, open Spotify on that device first so it shows up in the device list.
+
+**Colours look wrong on a phone**
+Turn off the browser's forced dark mode for the site (e.g. Samsung Internet → dark mode).
+
+---
+
+## 🏗 Architecture
 
 ```
-Home network
-       │
-       ▼ Port 443 (HTTPS)
-  ┌─────────┐
-  │  nginx  │  ← SSL termination
-  └────┬────┘
-       │ internal HTTP
-       ▼
-  ┌──────────────┐
-  │ hitster-app  │  ← Express.js + Socket.IO + Spotify Web API
-  └──────────────┘
+Home network ──▶ :443 HTTPS ──▶ nginx (TLS) ──▶ songline-app (Node.js: Express + Socket.IO)
+                                                     │
+                                                     └──▶ Spotify Web API
 ```
-
-### Project structure
 
 ```
 backend/
@@ -143,66 +163,25 @@ frontend/public/
   index.html        Markup of all screens
   i18n.js           German/English translations
   app.js            Client logic
-  tv.js             TV/projector view
+  tv.js             TV view
   effects.js        Sounds and confetti
-  styles.css        Styles
+  styles.css        Styles (desktop, mobile, TV)
 nginx/default.conf  HTTPS reverse proxy
 setup.sh            Interactive setup
 renew-cert.sh       Renews the self-signed certificate
 ```
 
-Preset play packs are configured in `PRESET_PACKS` at the top of `backend/server.js`.
-
 ---
 
-## Tests
-
-```bash
-docker run --rm -v "$PWD/backend":/app -w /app node:20-alpine sh -c "npm install && npm test"
-```
-
----
-
-## Maintenance
-
-### Renew the certificate (after 365 days)
-```bash
-./renew-cert.sh
-```
-
-### View logs
-```bash
-docker compose logs -f
-docker compose logs nginx
-docker compose logs hitster-app
-```
-
-### Restart
-```bash
-docker compose restart
-```
-
-### Update (after code changes)
-```bash
-docker compose up --build -d
-```
-
-> After changing `.env`, use `docker compose up -d` – a plain `restart` does not reload environment variables.
-
----
-
-## Ports
-
-| Port | Protocol | Purpose |
-|------|----------|---------|
-| 80   | HTTP     | Redirect to HTTPS |
-| 443  | HTTPS    | Songline app |
-
-The app port 3001 is not exposed – everything goes through nginx.
-
----
-
-## Security notes
+## 🔒 Security notes
 
 - **Never commit `.env` or `certs/`** – they contain your Spotify secret and private key (both are in `.gitignore`).
-- If your Spotify client secret was ever published, rotate it in the Spotify dashboard.
+- Songline is meant for your **home network**. Don't expose it to the internet without proper authentication and a real certificate.
+
+---
+
+## 📄 License
+
+[MIT](LICENSE) © 2026 Tom13372448
+
+Spotify is a trademark of Spotify AB. HITSTER is a trademark of its respective owner. This project is not affiliated with either.

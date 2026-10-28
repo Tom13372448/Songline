@@ -29,15 +29,25 @@ const on = (event, fn) => socket.on(event, (...args) => { if (!state.tv) fn(...a
 
 // localStorage may be missing or throw (private window, blocked data)
 const store = {
-  get(k) { try { return JSON.parse(localStorage.getItem('hitster:' + k)); } catch(e) { return null; } },
-  set(k, v) { try { localStorage.setItem('hitster:' + k, JSON.stringify(v)); } catch(e) {} },
-  del(k) { try { localStorage.removeItem('hitster:' + k); } catch(e) {} },
+  get(k) { try { return JSON.parse(localStorage.getItem('songline:' + k)); } catch(e) { return null; } },
+  set(k, v) { try { localStorage.setItem('songline:' + k, JSON.stringify(v)); } catch(e) {} },
+  del(k) { try { localStorage.removeItem('songline:' + k); } catch(e) {} },
 };
 const playerKey = store.get('playerKey') || (() => {
   const k = Math.random().toString(36).slice(2) + Date.now().toString(36);
   store.set('playerKey', k);
   return k;
 })();
+
+console.log('%cSONGLINE%c  crafted by Tom13372448', 'font: 700 22px sans-serif; color: #b77cff', 'color: #9d93b8');
+
+let eqTaps = 0, eqTapTimer = null;
+document.addEventListener('click', e => {
+  if (!e.target.closest('#screen-menu .menu-eq')) return;
+  clearTimeout(eqTapTimer);
+  eqTapTimer = setTimeout(() => { eqTaps = 0; }, 1500);
+  if (++eqTaps === 5) { eqTaps = 0; showToast('🎵 SONGLINE · crafted by Tom13372448'); Effects.confetti(80); }
+});
 
 function saveTokens() {
   store.set('spotify', { accessToken: state.accessToken, refreshToken: state.refreshToken });

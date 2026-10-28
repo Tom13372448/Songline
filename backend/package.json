@@ -1,6 +1,9 @@
 {
   "name": "songline-backend",
   "version": "1.0.0",
+  "description": "Songline – self-hosted music timeline party game (server)",
+  "author": "Tom13372448",
+  "license": "MIT",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

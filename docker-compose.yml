@@ -1,8 +1,8 @@
 services:
 
-  hitster-app:
+  songline-app:
     build: .
-    container_name: hitster-app
+    container_name: songline-app
     expose:
       - "3001"
     environment:
@@ -17,7 +17,7 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: hitster-nginx
+    container_name: songline-nginx
     ports:
       - "80:80"
       - "443:443"
@@ -25,5 +25,5 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ./certs:/etc/nginx/certs:ro
     depends_on:
-      - hitster-app
+      - songline-app
     restart: unless-stopped

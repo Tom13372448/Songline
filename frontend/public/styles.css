@@ -7,6 +7,7 @@
   --accent: #b77cff;                 /* text, borders, icons */
   --accent-grad: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
   --accent-solid: #b15de6;            /* fallback if a browser strips the gradient */
+  --edge: #13372448;
   --on-accent: #fff;                 /* text on accent surfaces */
   --accent-faint: rgba(168,85,247,0.06);
   --accent-soft: rgba(168,85,247,0.12);
@@ -1687,6 +1688,7 @@ body:not(.mobile) .menu-bg { display: block; position: fixed; inset: 0; z-index:
   border-radius: 12px;
   background: rgba(35, 29, 61, 0.55);
   border: 1px solid rgba(183, 124, 255, 0.16);
+  box-shadow: 0 0 0 1px var(--edge);
   opacity: 0.5;
   transform: rotate(var(--r));
   animation: card-float 18s ease-in-out infinite;

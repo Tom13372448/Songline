@@ -2,7 +2,7 @@
 const Effects = (() => {
   let ctx = null;
   let muted = false;
-  try { muted = localStorage.getItem('hitster:muted') === '1'; } catch (e) {}
+  try { muted = localStorage.getItem('songline:muted') === '1'; } catch (e) {}
 
   // Browsers only allow audio after a user interaction
   function audio() {
@@ -49,7 +49,7 @@ const Effects = (() => {
 
   function setMuted(value) {
     muted = value;
-    try { localStorage.setItem('hitster:muted', value ? '1' : '0'); } catch (e) {}
+    try { localStorage.setItem('songline:muted', value ? '1' : '0'); } catch (e) {}
     if (!muted) audio();
   }
 

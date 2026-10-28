@@ -1,19 +1,19 @@
 #!/bin/bash
-# Renew the certificate (run after 365 days)
+# Renew the self-signed certificate (run after 365 days)
 
 cd "$(dirname "$0")"
-RASPI_IP=$(grep REDIRECT_URI .env | grep -oP '(?<=://)[\d.]+')
-if [ -z "$RASPI_IP" ]; then echo "❌ Keine IP in REDIRECT_URI (.env) gefunden"; exit 1; fi
+SERVER_IP=$(sed -nE 's|^REDIRECT_URI=https?://([0-9.]+).*|\1|p' .env)
+if [ -z "$SERVER_IP" ]; then echo "❌ No IP address found in REDIRECT_URI (.env)"; exit 1; fi
 mkdir -p certs
 
-echo "🔐 Erneuere Zertifikat für IP: $RASPI_IP"
+echo "🔐 Renewing certificate for IP: $SERVER_IP"
 
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout certs/key.pem \
   -out certs/cert.pem \
-  -subj "/CN=${RASPI_IP}" \
-  -addext "subjectAltName=IP:${RASPI_IP}" \
+  -subj "/CN=${SERVER_IP}" \
+  -addext "subjectAltName=IP:${SERVER_IP}" \
   2>/dev/null
 
 docker compose restart nginx
-echo "✅ Fertig! Zertifikat ist wieder 365 Tage gültig."
+echo "✅ Done! The certificate is valid for another 365 days."

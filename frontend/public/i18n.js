@@ -620,10 +620,19 @@ const I18N = {
   },
 };
 
+// One-time migration of settings saved under the project's previous key prefix
+try {
+  Object.keys(localStorage).filter(k => k.startsWith('hitster:')).forEach(k => {
+    const key = 'songline:' + k.slice(8);
+    if (localStorage.getItem(key) === null) localStorage.setItem(key, localStorage.getItem(k));
+    localStorage.removeItem(k);
+  });
+} catch (e) {}
+
 const LANGS = ['de', 'en'];
 let lang = (() => {
   try {
-    const saved = localStorage.getItem('hitster:lang');
+    const saved = localStorage.getItem('songline:lang');
     if (LANGS.includes(saved)) return saved;
   } catch (e) {}
   return (navigator.language || 'de').toLowerCase().startsWith('de') ? 'de' : 'en';
@@ -670,7 +679,7 @@ function onLangChange(fn) { langListeners.push(fn); }
 function setLang(next) {
   if (!LANGS.includes(next) || next === lang) return;
   lang = next;
-  try { localStorage.setItem('hitster:lang', lang); } catch (e) {}
+  try { localStorage.setItem('songline:lang', lang); } catch (e) {}
   applyI18n();
   langListeners.forEach(fn => { try { fn(); } catch (e) { console.error(e); } });
 }
