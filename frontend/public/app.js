@@ -266,6 +266,7 @@ on('game:challenge', ({ lobby }) => {
   updateActionButtons();
   updateChallengeUI();
   if (!wasOpen && canChallenge() && navigator.vibrate) navigator.vibrate(80);
+  if (!wasOpen && canChallenge()) scrollToAction('challenge-panel');
   if (wasOpen && lobby.turn.challenges.length) Effects.sound('songline');
 });
 
@@ -870,9 +871,27 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && state.lobby) keepScreenOn();
 });
 
+// ════════════════════════════════════════════════════════════════
+// PHONE VS. DESKTOP
+// ════════════════════════════════════════════════════════════════
+// Touch devices with a small screen (and very narrow windows) get the mobile layout:
+// vertical timeline, thumb action bar, compact scores – see body.mobile in styles.css
+const mobileQuery = matchMedia('(pointer: coarse) and (max-width: 820px), (max-width: 600px)');
+function isMobile() { return mobileQuery.matches; }
+function syncDeviceClass() { document.body.classList.toggle('mobile', isMobile()); }
+mobileQuery.addEventListener?.('change', syncDeviceClass);
+window.addEventListener('DOMContentLoaded', syncDeviceClass);
+
+// On phones, bring the part that needs input into view
+function scrollToAction(id) {
+  if (!isMobile()) return;
+  setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 150);
+}
+
 function notifyMyTurn() {
   showToast(L(state.lobby?.teamMode ? 'game.yourTeamTurn' : 'game.yourTurn'));
   Effects.sound('turn');
+  scrollToAction(state.lobby?.gameMode === 'classic' ? 'timeline-section' : 'guess-section');
   if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
 }
 
@@ -1376,8 +1395,8 @@ function renderTimeline() {
 
 function slotLabel(tl, i) {
   if (!tl.length) return L('game.slotHere');
-  if (i === 0) return `< ${tl[0].year}`;
-  if (i === tl.length) return `> ${tl[tl.length-1].year}`;
+  if (i === 0) return L('slot.before', { y: tl[0].year });
+  if (i === tl.length) return L('slot.after', { y: tl[tl.length-1].year });
   return `${tl[i-1].year}–${tl[i].year}`;
 }
 

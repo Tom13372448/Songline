@@ -1454,3 +1454,180 @@ body.tv-mode header { display: none; }
   .spotify-badge span { display: none; } /* icon only on narrow screens */
   .spotify-badge { padding: 6px; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE LAYOUT (body.mobile is set by app.js for phones)
+   ══════════════════════════════════════════════════════════════ */
+body.mobile { -webkit-tap-highlight-color: transparent; }
+body.mobile button, body.mobile a, body.mobile .timeline-drop, body.mobile .menu-card,
+body.mobile .mode-option, body.mobile .source-tab, body.mobile .pack-card { touch-action: manipulation; }
+body.mobile .screen { padding: 16px 16px calc(24px + env(safe-area-inset-bottom)); }
+body.mobile header { padding-top: calc(12px + env(safe-area-inset-top)); }
+
+/* iOS zooms into inputs smaller than 16px */
+body.mobile input:not(.menu-code-input):not(.tv-pair-input):not([type="range"]):not([type="checkbox"]),
+body.mobile select { font-size: 16px !important; }
+
+/* Messages at the top, so they never cover the timeline or the action bar */
+body.mobile .toast {
+  top: calc(64px + env(safe-area-inset-top));
+  bottom: auto;
+  transform: translateX(-50%) translateY(-140px);
+  max-width: calc(100vw - 32px);
+  text-align: center;
+  z-index: 300;
+}
+body.mobile .toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── Game header: one compact row ── */
+body.mobile .game-header { margin-bottom: 12px; flex-wrap: nowrap; }
+body.mobile .current-player-label { font-size: 0.65rem; }
+body.mobile .current-player-name { font-size: 1.6rem; line-height: 1.1; }
+body.mobile .game-header .round-badge { padding: 6px 10px; font-size: 0.75rem; }
+body.mobile .game-header .btn-secondary { padding: 6px 10px !important; white-space: nowrap; }
+
+/* ── Scores: horizontal strip of compact chips ── */
+body.mobile .scores-grid {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 0 -16px 12px;
+  padding: 2px 16px 6px;
+  scrollbar-width: none;
+}
+body.mobile .scores-grid::-webkit-scrollbar { display: none; }
+body.mobile .score-card {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: 28px auto auto;
+  column-gap: 8px;
+  align-items: center;
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+body.mobile .score-card .score-avatar { grid-row: span 2; width: 28px; height: 28px; font-size: 0.75rem; margin: 0; }
+body.mobile .score-card .score-name { grid-column: 2; font-size: 0.8rem; white-space: nowrap; margin: 0; }
+body.mobile .score-card .score-members { display: none; }
+body.mobile .score-card .score-pts { grid-column: 3; grid-row: 1 / span 2; font-size: 1.5rem; padding-left: 4px; }
+body.mobile .score-card .score-timeline-count { grid-column: 2; font-size: 0.68rem; margin: 0; white-space: nowrap; }
+body.mobile #end-scores-grid { flex-wrap: wrap; justify-content: center; overflow: visible; margin: 0 0 24px; }
+
+body.mobile .waiting-banner { padding: 10px 14px; margin-bottom: 12px; font-size: 0.85rem; }
+
+/* ── Track card: compact while the song is hidden ── */
+body.mobile .track-card { padding: 16px; margin-bottom: 16px; border-radius: 14px; }
+body.mobile .track-hidden-state { display: flex !important; align-items: center; justify-content: center; gap: 12px; padding: 4px 0; text-align: left; }
+body.mobile .track-hidden-state[style*="none"] { display: none !important; }
+body.mobile .mystery-icon { font-size: 2rem; margin: 0; }
+body.mobile .mystery-text { font-size: 1.3rem; margin: 0; }
+body.mobile .mystery-sub { display: none; }
+body.mobile .track-revealed.show { gap: 14px; align-items: center; }
+body.mobile .track-art, body.mobile .track-art-placeholder { width: 84px; height: 84px; }
+body.mobile .audio-player { margin-top: 12px; padding: 8px 12px; }
+body.mobile #audio-host-message { padding: 6px 0 0; }
+
+/* ── Timeline: vertical list with wide tap targets ── */
+body.mobile .timeline-section { margin-bottom: 16px; }
+body.mobile .timeline-scroll { overflow: visible; padding: 0; }
+body.mobile .timeline { flex-direction: column; min-width: 0; padding: 0; gap: 6px; }
+body.mobile .timeline-slot { width: 100%; }
+body.mobile .connector { display: none; }
+body.mobile .timeline-drop {
+  width: 100%;
+  min-height: 48px;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+body.mobile .drop-plus { font-size: 1.3rem; line-height: 1; }
+body.mobile .drop-label { font-size: 0.85rem; text-transform: none; letter-spacing: 0; }
+body.mobile .timeline-drop.selected { border-style: solid; color: var(--accent); }
+body.mobile .timeline-drop.selected .drop-label::after { content: '  ✓'; }
+body.mobile .timeline-card {
+  min-width: 0;
+  max-width: none;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  align-items: center;
+  text-align: left;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+body.mobile .timeline-card .tc-year { grid-row: span 2; font-size: 1.6rem; margin: 0; }
+body.mobile .timeline-card .tc-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.mobile .timeline-card .tc-artist { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── Inputs for title/artist stacked ── */
+body.mobile .guess-section { padding: 14px; margin-bottom: 16px; }
+body.mobile #token-guess .flex-row { flex-direction: column; gap: 0; }
+body.mobile #token-guess .input-group { width: 100% !important; min-width: 0 !important; margin-bottom: 8px; }
+
+/* ── Thumb action bar fixed at the bottom ── */
+body.mobile #screen-game { padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
+body.mobile #action-row,
+body.mobile #challenge-panel .challenge-actions {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 120;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: rgba(15, 12, 29, 0.92);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+}
+body.mobile #action-row[style*="none"] { display: none !important; }
+body.mobile #action-row .btn-reveal, body.mobile #action-row .btn-guess { min-width: 0; padding: 15px 12px; font-size: 0.95rem; }
+body.mobile #action-row .btn-reveal { flex: 0 0 38%; }
+body.mobile #challenge-panel .challenge-actions > button { flex: 1; margin: 0; padding: 15px 12px; }
+body.mobile #challenge-panel .challenge-actions > button[style*="none"] { display: none !important; }
+body.mobile .challenge-panel { padding: 14px; margin-bottom: 16px; }
+body.mobile .challenge-title { font-size: 1.5rem; }
+body.mobile #game-hint { margin-top: 0; font-size: 0.85rem; }
+
+/* ── Result & pause as bottom sheet ── */
+body.mobile .verdict-overlay { align-items: flex-end; padding: 0; }
+body.mobile .verdict-box {
+  max-width: none;
+  border-radius: 22px 22px 0 0;
+  border-width: 1px 0 0;
+  padding: 26px 20px calc(20px + env(safe-area-inset-bottom));
+  animation: sheet-up 0.3s cubic-bezier(.2,1,.4,1);
+}
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+body.mobile .verdict-icon { font-size: 2.6rem; margin-bottom: 4px; }
+body.mobile .verdict-box .btn-primary, body.mobile .verdict-box .btn-secondary { width: 100%; padding: 15px; }
+
+/* ── Dialogs as bottom sheets ── */
+body.mobile .modal-overlay { align-items: flex-end; padding: 0; }
+body.mobile .modal-box {
+  width: 100%;
+  max-width: none;
+  max-height: 88vh;
+  overflow-y: auto;
+  border-radius: 22px 22px 0 0;
+  padding: 22px 18px calc(18px + env(safe-area-inset-bottom));
+  animation: sheet-up 0.3s cubic-bezier(.2,1,.4,1);
+}
+
+/* ── Lobby settings: compact mode list ── */
+body.mobile .mode-grid { grid-template-columns: 1fr; gap: 8px; }
+body.mobile .mode-option { display: grid; grid-template-columns: 36px 1fr; column-gap: 12px; align-items: center; text-align: left; padding: 12px 14px; }
+body.mobile .mode-option .mode-icon { grid-row: span 2; font-size: 1.6rem; margin: 0; }
+body.mobile .mode-option .mode-name { margin: 0; }
+body.mobile .lobby-code { font-size: 3.2rem; letter-spacing: 12px; }
+body.mobile .round-banner { flex-wrap: wrap; }
+body.mobile .round-banner .btn-primary { width: 100%; padding: 13px; }
+body.mobile #action-row:has(.btn-guess[style*="none"]) .btn-reveal { flex: 1; }
+body.mobile #action-row .btn-reveal { font-size: 0.88rem; white-space: nowrap; }
+body.mobile #challenge-panel .challenge-actions #btn-songline { flex: 1.4; white-space: nowrap; font-size: 0.92rem; }

@@ -2,7 +2,8 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f0c1d">
 <title>SONGLINE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -348,7 +349,7 @@
   <div class="challenge-panel" id="challenge-panel" style="display:none">
     <div class="challenge-title">SONGLINE! <span id="challenge-countdown"></span></div>
     <div class="text-muted" id="challenge-text" style="margin:6px 0 12px"></div>
-    <div class="flex-row" style="justify-content:center;gap:10px;flex-wrap:wrap">
+    <div class="flex-row challenge-actions" style="justify-content:center;gap:10px;flex-wrap:wrap">
       <button class="btn-primary" id="btn-songline" onclick="callSongline()" style="width:auto;background:var(--hot);color:var(--black)" disabled data-i18n="game.callSongline">📣 SONGLINE! (1 🪙)</button>
       <button class="btn-secondary" id="btn-pass" onclick="passChallenge()" data-i18n="game.pass">Passen</button>
       <button class="btn-secondary" id="btn-resolve" onclick="resolveNow()" data-i18n="game.revealNow">Jetzt aufdecken</button>
