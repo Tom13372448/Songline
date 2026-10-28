@@ -94,13 +94,15 @@ header {
 .login-title {
   font-family: 'Bebas Neue', sans-serif;
   font-size: clamp(3rem, 10vw, 6rem);
+  /* Gradient text: no filter/animation on this element – WebKit (iPhone) then renders it invisible */
   background: var(--accent-grad);
   -webkit-background-clip: text;
   background-clip: text;
+  -webkit-text-fill-color: transparent;
   color: transparent;
-  filter: drop-shadow(0 0 30px var(--accent-glow));
   line-height: 0.9;
   letter-spacing: 6px;
+  position: relative;
 }
 
 .login-sub {
@@ -1247,8 +1249,8 @@ body.tv-mode header { display: none; }
   background: var(--accent-grad);
   -webkit-background-clip: text;
   background-clip: text;
+  -webkit-text-fill-color: transparent;
   color: transparent;
-  filter: drop-shadow(0 0 30px var(--accent-glow));
 }
 
 /* ── Start menu ──────────────────────────────── */
@@ -1260,8 +1262,20 @@ body.tv-mode header { display: none; }
   max-width: 640px;
   padding-top: 32px;
 }
-.menu-hero { text-align: center; margin-bottom: 28px; }
-.menu-hero .login-title { animation: title-in 0.8s cubic-bezier(.2,1.2,.4,1); }
+.menu-hero { text-align: center; margin-bottom: 28px; position: relative; isolation: isolate; }
+/* Soft glow behind the title (instead of a filter on the gradient text) */
+.menu-hero::before {
+  content: '';
+  position: absolute;
+  left: 50%; top: 55%;
+  width: 260px; height: 180px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, var(--accent-glow), transparent);
+  opacity: 0.55;
+  z-index: -1;
+  pointer-events: none;
+}
+.menu-tagline { animation: title-in 0.8s cubic-bezier(.2,1.2,.4,1); }
 @keyframes title-in { from { opacity: 0; transform: translateY(16px) scale(0.95); } to { opacity: 1; transform: none; } }
 .menu-tagline { color: var(--muted); margin-top: 14px; font-size: 1rem; }
 .menu-eq { display: flex; justify-content: center; align-items: flex-end; gap: 5px; height: 34px; margin-bottom: 14px; }
@@ -1441,13 +1455,14 @@ body.tv-mode header { display: none; }
   width: 22px; height: 14px;
   border-radius: 3px;
   display: block;
-  opacity: 0.4;
-  filter: grayscale(0.6);
-  transition: opacity 0.2s, filter 0.2s, transform 0.2s;
+  overflow: hidden;
+  transition: opacity 0.2s;
 }
-.lang-btn:hover .flag { opacity: 0.8; filter: none; }
+/* Dim with opacity only – CSS filters on inline SVG are not drawn by WebKit */
+.lang-btn:not(.active) .flag { opacity: 0.5; }
+.lang-btn:not(.active):hover .flag { opacity: 0.85; }
 .lang-btn.active { background: var(--accent-grad); }
-.lang-btn.active .flag { opacity: 1; filter: none; box-shadow: 0 0 0 1px rgba(255,255,255,0.6); }
+.lang-btn.active .flag { opacity: 1; box-shadow: 0 0 0 1px rgba(255,255,255,0.6); }
 @media (max-width: 480px) {
   header { padding: 14px 16px; }
   .header-right { gap: 8px; }
