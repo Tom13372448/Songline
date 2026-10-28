@@ -1,0 +1,8 @@
+# Credentials & certificates – never commit
+.env
+certs/
+
+# Runtime data
+data/
+
+node_modules/
