@@ -490,19 +490,52 @@
 
 <!-- ════════════════════════════════════════════════════════ TV -->
 <div id="screen-tv" class="screen tv-screen">
-  <div class="tv-grid">
-    <aside class="tv-side">
+  <div class="tvx-bg" aria-hidden="true"><div class="menu-glow menu-glow-a"></div><div class="menu-glow menu-glow-b"></div></div>
+
+  <!-- Before the game: welcome screen with QR code and joining players -->
+  <section class="tvx-lobby" id="tvx-lobby">
+    <div class="tvx-lobby-left">
+      <div class="menu-eq tvx-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="tvx-logo">SONGLINE</div>
+      <div class="tvx-lobby-status" id="tv-status" data-i18n="tvv.connecting">Verbinde…</div>
+      <div class="tvx-chips" id="tvx-chips"></div>
+    </div>
+    <div class="tvx-join-card">
       <div class="tv-label" data-i18n="tvv.join">Scannen & mitspielen</div>
-      <img id="tv-qr" class="tv-qr" alt="QR-Code zum Beitreten" data-i18n-alt="qr.alt">
-      <div class="tv-code" id="tv-code">----</div>
+      <img id="tv-qr" class="tvx-qr" alt="QR-Code zum Beitreten" data-i18n-alt="qr.alt">
+      <div class="tvx-code" id="tv-code">----</div>
       <div class="tv-url" id="tv-url"></div>
-    </aside>
-    <main class="tv-main">
-      <div class="tv-status" id="tv-status"></div>
-      <div id="tv-reveal"></div>
-      <div class="tv-units" id="tv-units"></div>
+    </div>
+  </section>
+
+  <!-- During the game: stage -->
+  <section class="tvx-game" id="tvx-game">
+    <div class="tvx-top">
+      <div class="tvx-top-logo">SONGLINE</div>
+      <div class="tvx-pill" id="tvx-round"></div>
+      <div class="tvx-pill tvx-mode" id="tvx-mode"></div>
+      <div class="tvx-top-join">
+        <img id="tvx-qr-small" class="tvx-qr-small" alt="">
+        <div><div class="tvx-top-code" id="tvx-code-small">----</div><div class="tvx-top-url" id="tvx-url-small"></div></div>
+      </div>
+    </div>
+    <main class="tvx-stage">
+      <div class="tvx-turn" id="tvx-turn"></div>
+      <div class="tvx-state" id="tvx-state"></div>
+      <div class="tvx-timeline-wrap" id="tvx-timeline-wrap">
+        <div class="tvx-section-label" id="tvx-timeline-label"></div>
+        <div class="tvx-timeline" id="tvx-timeline"></div>
+      </div>
+      <div class="tvx-paused" id="tvx-paused" data-i18n="tvv.paused">⏸ Pause – warte auf den Host…</div>
     </main>
-  </div>
+    <aside class="tvx-board">
+      <div class="tvx-section-label" data-i18n="tvv.leaderboard">Rangliste</div>
+      <ol class="tvx-ranks" id="tvx-ranks"></ol>
+    </aside>
+  </section>
+
+  <!-- Game over: podium -->
+  <section class="tvx-end" id="tvx-end"></section>
 </div>
 
 <!-- ════════════════════════════════════════════════════════ SEARCH MODAL -->
