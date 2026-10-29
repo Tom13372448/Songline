@@ -8,6 +8,7 @@ let battle = null;              // { size, tracks: {id: track}, rounds: [[id…]
 let battleTimer = null;
 let battlePlaying = null;       // 'a' | 'b' | null
 let battlePacks = [];
+let battlePoll = null;
 
 // ── Entry ─────────────────────────────────────────────────────────
 function openBattle() {
@@ -225,16 +226,55 @@ function playBattleSide(side, next) {
   const t = currentPair()[side === 'a' ? 0 : 1];
   battlePlaying = side;
   document.querySelectorAll('.battle-card').forEach(c => c.classList.toggle('playing', c.id === 'battle-card-' + side));
+  document.getElementById('battle-now').innerHTML = `<b>${side.toUpperCase()}</b> ${esc(t.name)} · ${esc(t.artist)}`;
   const start = t.duration > SNIPPET_START_MS + SNIPPET_MS ? SNIPPET_START_MS : 0;
   playTrack({ id: t.id }, { positionMs: start });
+  startBattlePlayer();
   battleTimer = setTimeout(() => {
     if (next) next();
     else { stopBattleAudio(true); }
   }, SNIPPET_MS);
 }
 
+// ── Player bar (like classic mode) ────────────────────────────────
+function startBattlePlayer() {
+  clearInterval(battlePoll);
+  const tick = async () => {
+    const s = await getPlaybackState().catch(() => null);
+    if (!s) return;
+    document.getElementById('battle-progress-fill').style.width = `${s.duration ? (s.position / s.duration) * 100 : 0}%`;
+    document.getElementById('battle-time').textContent = fmtTime(Math.max(0, s.duration - s.position) / 1000);
+    document.getElementById('battle-play-btn').textContent = s.paused ? '▶' : '⏸';
+  };
+  tick();
+  battlePoll = setInterval(tick, usingBrowserPlayer() ? 400 : 1000);
+}
+
+// Taking control yourself stops the automatic A → B sequence
+function battleTogglePlay() {
+  clearTimeout(battleTimer);
+  if (!battlePlaying) { playBattleSide('a'); return; }
+  togglePlay();
+}
+
+async function battleSeek(e) {
+  if (!battlePlaying) return;
+  clearTimeout(battleTimer);
+  const rect = e.currentTarget.getBoundingClientRect();
+  const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+  const s = await getPlaybackState().catch(() => null);
+  if (!s) return;
+  const position = Math.round(ratio * s.duration);
+  if (usingBrowserPlayer()) spotifyPlayer?.seek(position);
+  else spotifyApi(`/me/player/seek?position_ms=${position}&device_id=${selectedDeviceId}`, { method: 'PUT' });
+  document.getElementById('battle-progress-fill').style.width = `${ratio * 100}%`;
+}
+
 function stopBattleAudio(fade = false) {
   clearTimeout(battleTimer);
+  clearInterval(battlePoll);
+  const btn = document.getElementById('battle-play-btn');
+  if (btn) btn.textContent = '▶';
   battlePlaying = null;
   document.querySelectorAll('.battle-card').forEach(c => c.classList.remove('playing'));
   stopAudio(fade);

@@ -2300,3 +2300,15 @@ body.mobile .battle-panel { padding: 18px; }
 /* Battle fixes: covers fit the screen height, bracket pairs never squeezed */
 body:not(.mobile) .battle-cover-wrap { width: min(100%, 44vh); margin: 0 auto 12px; }
 .bracket-pair { flex-shrink: 0; }
+
+/* Battle player bar (same controls as classic mode) */
+.battle-player-wrap { max-width: 640px; margin: 22px auto 0; }
+.battle-now { text-align: center; font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; min-height: 1.2em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.battle-now b { color: var(--hot); margin-right: 4px; }
+.battle-player { margin-top: 0; }
+body.mobile .battle-player-wrap { margin-top: 14px; }
+/* Desktop: compact duel so cards and player bar fit on one screen */
+body:not(.mobile) .battle-cover-wrap { width: min(100%, 30vh); }
+body:not(.mobile) .battle-duel { margin-top: 16px; }
+body:not(.mobile) .battle-card { padding: 14px; }
+body:not(.mobile) .battle-player-wrap { margin-top: 16px; }
