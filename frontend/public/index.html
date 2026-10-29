@@ -74,43 +74,38 @@
       onkeydown="if(event.key==='Enter')document.getElementById('lobby-code-input').focus()">
   </div>
 
-  <div class="menu-grid">
-    <button class="menu-card menu-card-host" onclick="createLobby()">
-      <span class="menu-icon">🎤</span>
-      <span class="menu-card-title" data-i18n="menu.host">Spiel hosten</span>
-      <span class="menu-card-sub" id="host-sub">Mit Spotify Premium – du bestimmst die Musik</span>
+  <nav class="menu-list">
+    <button class="menu-item menu-item-primary" onclick="createLobby()">
+      <span class="menu-item-icon">🎤</span>
+      <span class="menu-item-text"><b data-i18n="menu.host">Spiel hosten</b><small id="host-sub"></small></span>
+      <span class="menu-item-arrow">›</span>
     </button>
 
-    <div class="menu-or" data-i18n="menu.or">oder</div>
-
-    <div class="menu-card menu-card-join">
-      <span class="menu-icon">🎟️</span>
-      <span class="menu-card-title" data-i18n="menu.join">Beitreten</span>
-      <div class="menu-join-row">
-        <input type="text" id="lobby-code-input" class="menu-code-input" placeholder="CODE" maxlength="4" autocomplete="off"
-          oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')joinLobby()">
-        <button class="btn-primary" onclick="joinLobby()" data-i18n="menu.go">Los</button>
+    <div class="menu-item-join" id="menu-join">
+      <button class="menu-item" onclick="toggleJoin()">
+        <span class="menu-item-icon">🎟️</span>
+        <span class="menu-item-text"><b data-i18n="menu.join">Beitreten</b><small data-i18n="menu.joinSub">Kein Spotify nötig</small></span>
+        <span class="menu-item-arrow">›</span>
+      </button>
+      <div class="menu-join-drawer">
+        <div class="menu-join-row">
+          <input type="text" id="lobby-code-input" class="menu-code-input" placeholder="CODE" maxlength="4" autocomplete="off"
+            oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')joinLobby()">
+          <button class="btn-primary" onclick="joinLobby()" data-i18n="menu.go">Los</button>
+        </div>
       </div>
-      <span class="menu-card-sub" data-i18n="menu.joinSub">Kein Spotify nötig</span>
     </div>
 
-    <button class="menu-card menu-card-battle" onclick="openBattle()">
-      <span class="menu-icon">⚔️</span>
-      <span class="menu-card-title" data-i18n="menu.battle">Song-Battle</span>
-      <span class="menu-card-sub" data-i18n="menu.battleSub">Solo: 16, 32 oder 64 Songs im K.-o.-Turnier – du entscheidest</span>
+    <button class="menu-item menu-item-battle" onclick="openBattle()">
+      <span class="menu-item-icon">⚔️</span>
+      <span class="menu-item-text"><b data-i18n="menu.battle">Song-Battle</b><small data-i18n="menu.battleSub">Solo-Turnier mit 16, 32 oder 64 Songs</small></span>
+      <span class="menu-item-arrow">›</span>
     </button>
+  </nav>
 
-    <a class="menu-card menu-card-small" href="/tv">
-      <span class="menu-icon">📺</span>
-      <span class="menu-card-title" data-i18n="menu.tv">Als TV-Bildschirm nutzen</span>
-      <span class="menu-card-sub" data-i18n="menu.tvSub">Zeigt allen die Zeitlinien</span>
-    </a>
-
-    <button class="menu-card menu-card-small" onclick="openRules()">
-      <span class="menu-icon">📖</span>
-      <span class="menu-card-title" data-i18n="menu.rules">Spielregeln</span>
-      <span class="menu-card-sub" data-i18n="menu.rulesSub">Modi, Tokens &amp; SONGLINE!</span>
-    </button>
+  <div class="menu-secondary">
+    <a href="/tv"><span>📺</span> <span data-i18n="menu.tv">Als TV-Bildschirm nutzen</span></a>
+    <button onclick="openRules()"><span>📖</span> <span data-i18n="menu.rules">Spielregeln</span></button>
   </div>
   </div>
 

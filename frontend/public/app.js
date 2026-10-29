@@ -121,6 +121,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   if (joinCode) {
     document.getElementById('lobby-code-input').value = joinCode.toUpperCase();
+    toggleJoin(true);
     document.getElementById(store.get('name') ? 'lobby-code-input' : 'home-name').focus();
   } else if (at && store.get('pendingBattle')) {
     // Back from the Spotify login started via "Song Battle"
@@ -375,6 +376,14 @@ function logoutSpotify() {
   store.del('spotify');
   syncMenu();
   showToast(L('t.loggedOut'));
+}
+
+// Start menu: "Join" opens a small drawer with the code field
+function toggleJoin(open) {
+  const el = document.getElementById('menu-join');
+  const show = open ?? !el.classList.contains('open');
+  el.classList.toggle('open', show);
+  if (show) setTimeout(() => document.getElementById('lobby-code-input').focus(), 150);
 }
 
 function openRules() { document.getElementById('rules-modal').classList.add('show'); }
