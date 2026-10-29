@@ -122,6 +122,10 @@ window.addEventListener('DOMContentLoaded', () => {
   if (joinCode) {
     document.getElementById('lobby-code-input').value = joinCode.toUpperCase();
     document.getElementById(store.get('name') ? 'lobby-code-input' : 'home-name').focus();
+  } else if (at && store.get('pendingBattle')) {
+    // Back from the Spotify login started via "Song Battle"
+    store.del('pendingBattle');
+    openBattle();
   } else if (at && store.get('pendingCreate')) {
     // Back from the Spotify login started via "host game"
     store.del('pendingCreate');
@@ -968,7 +972,8 @@ function renderGameState(lobby) {
   if (isGuess && myTurn) setTimeout(() => document.getElementById('guess-title').focus(), 300);
 }
 
-async function playTrack(track) {
+// opts.positionMs: start somewhere in the song (Song Battle snippets)
+async function playTrack(track, opts = {}) {
   fadeToken++; // cancel a running fade of the previous song
   if (usingBrowserPlayer() && !playerDeviceId) {
     showToast(L('t.playerConnecting'));
@@ -979,7 +984,7 @@ async function playTrack(track) {
   try {
     const play = () => spotifyApi(`/me/player/play?device_id=${deviceId}`, {
       method: 'PUT',
-      body: JSON.stringify({ uris: [`spotify:track:${track.id}`] }),
+      body: JSON.stringify({ uris: [`spotify:track:${track.id}`], position_ms: opts.positionMs || 0 }),
     });
     let response = await play();
     if (response.status === 404) {
@@ -1063,7 +1068,7 @@ async function fadeOutAndPause(ms = 1500) {
 
 function pauseNow() {
   if (usingBrowserPlayer()) return spotifyPlayer ? spotifyPlayer.pause().catch(() => {}) : Promise.resolve();
-  if (!state.accessToken || !isHost()) return Promise.resolve();
+  if (!state.accessToken || (state.lobby && !isHost())) return Promise.resolve();
   return spotifyApi(`/me/player/pause?device_id=${selectedDeviceId}`, { method: 'PUT' }).catch(() => {});
 }
 
@@ -1260,7 +1265,7 @@ async function togglePlay() {
 function stopAudio(fade = false) {
   clearInterval(audioProgressInterval);
   document.getElementById('play-btn').textContent = '▶';
-  if (!isHost() || !state.accessToken) return;
+  if (!state.accessToken || (state.lobby && !isHost())) return;
   if (fade) fadeOutAndPause();
   else { fadeToken++; pauseNow(); }
 }

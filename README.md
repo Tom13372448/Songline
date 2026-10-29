@@ -18,6 +18,7 @@ Everyone plays in the browser on their phone, tablet or laptop. Only the host ne
 - **Classic** – place songs on your timeline, following the original rules: start card, tokens, the **SONGLINE!** challenge (steal a card from someone who placed it wrong) and buying cards. Three variants: **Original**, **Pro** (title + artist required) and **Expert** (exact year too).
 - **Guess – Easy / Hard** – guess the title (and artist). Typo-tolerant, with suggestions while typing.
 - **Teams** – 2–4 teams with a shared timeline; any team member may play for their team.
+- **Song Battle (solo)** – 16, 32 or 64 songs (random from Spotify, a play pack or your own playlist) in a knockout bracket: listen to every duel and pick the winner until one song is left.
 
 **Party features**
 - **TV view** for a TV or projector: whose turn it is, the active timeline, SONGLINE! countdown, reveal with cover art, leaderboard and podium.
@@ -164,6 +165,7 @@ frontend/public/
   i18n.js           German/English translations
   app.js            Client logic
   tv.js             TV view
+  battle.js         Song Battle (solo knockout tournament)
   effects.js        Sounds and confetti
   styles.css        Styles (desktop, mobile, TV)
 nginx/default.conf  HTTPS reverse proxy
