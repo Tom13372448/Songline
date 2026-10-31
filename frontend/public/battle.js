@@ -82,7 +82,8 @@ function slimTrack(t) {
 }
 
 // Random songs from all of Spotify: random 2-letter searches at random offsets,
-// at most one song per artist, preferring well-known tracks when Spotify reports popularity
+// at most one song per artist, preferring well-known tracks if Spotify still reports popularity
+// (Development Mode apps no longer get that field since February 2026)
 async function fetchRandomTracks(count, onProgress) {
   const found = new Map();
   const artists = new Set();
@@ -114,12 +115,16 @@ async function fetchRandomTracks(count, onProgress) {
 // Random songs from a playlist (all pages), one per artist where possible
 async function fetchPlaylistTracks(playlistId, count, onProgress) {
   const all = [];
-  let url = `/playlists/${playlistId}/tracks?limit=100&fields=items(track(id,name,artists(id,name),album(images,release_date),duration_ms,is_local)),next`;
+  // /items with max. 50 per page; only playlists the user owns or collaborates on (see server.js)
+  let url = `/playlists/${playlistId}/items?limit=50`;
   while (url && all.length < 1000) {
     const res = await spotifyApi(url);
-    if (!res.ok) break;
+    if (!res.ok) {
+      if (res.status === 403) throw new Error('forbidden');
+      break;
+    }
     const data = await res.json();
-    all.push(...data.items.map(i => i.track).filter(t => t?.id && !t.is_local));
+    all.push(...data.items.map(i => i.item || i.track).filter(t => t?.id && !t.is_local && t.type !== 'episode'));
     url = data.next ? data.next.replace('https://api.spotify.com/v1', '') : null;
     onProgress(Math.min(all.length, count));
   }
@@ -154,7 +159,14 @@ async function startBattle() {
     document.getElementById('battle-loading-bar').style.width = `${(n / size) * 100}%`;
   };
   progress(0);
-  const tracks = playlistId ? await fetchPlaylistTracks(playlistId, size, progress) : await fetchRandomTracks(size, progress);
+  let tracks;
+  try {
+    tracks = playlistId ? await fetchPlaylistTracks(playlistId, size, progress) : await fetchRandomTracks(size, progress);
+  } catch (e) {
+    showToast(L(e.message === 'forbidden' ? 'err.playlistForbidden' : 'err.playlistLoad'));
+    showBattleView('setup');
+    return;
+  }
   if (tracks.length < size) {
     showToast(L('battle.notEnough', { n: tracks.length, size }));
     showBattleView('setup');

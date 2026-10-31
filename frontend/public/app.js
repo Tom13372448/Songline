@@ -1799,7 +1799,8 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => t.classList.remove('show'), 3000);
+  // Longer messages (e.g. explanations) stay a bit longer
+  toastTimeout = setTimeout(() => t.classList.remove('show'), Math.max(3000, String(msg).length * 70));
 }
 
 // ════════════════════════════════════════════════════════════════

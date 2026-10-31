@@ -193,14 +193,16 @@ function emitUpdate(lobby) {
 
 // ─── Songs & years ───────────────────────────────────────────────────────────
 
-// Load all pages of a playlist (Spotify returns at most 100 per request)
+// Load all pages of a playlist. Since the February 2026 Web API changes, Development Mode apps use
+// /items (max. 50 per page, entries in "item" instead of "track") and may only read playlists the
+// user owns or collaborates on – other playlists answer with 403.
 async function fetchPlaylistTracks(playlistId, token) {
   const tracks = [];
-  let url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
-  let params = { limit: 100, fields: 'items(track(id,name,artists(id,name),album(name,release_date,images))),next' };
+  let url = `https://api.spotify.com/v1/playlists/${playlistId}/items`;
+  let params = { limit: 50 };
   while (url && tracks.length < MAX_PLAYLIST_TRACKS) {
     const res = await axios.get(url, { headers: { Authorization: `Bearer ${token}` }, params });
-    tracks.push(...res.data.items.map(i => i.track).filter(t => t && t.id));
+    tracks.push(...res.data.items.map(i => i.item || i.track).filter(t => t && t.id && t.type !== 'episode'));
     url = res.data.next;
     params = undefined; // "next" already contains the parameters
   }
@@ -655,7 +657,9 @@ io.on('connection', (socket) => {
           socket.emit('lobby:error', { key: 'err.emptyPlaylist' }); return;
         }
       } catch (e) {
-        socket.emit('lobby:error', { key: 'err.playlistLoad' }); return;
+        const status = e.response?.status;
+        const key = status === 403 ? 'err.playlistForbidden' : status === 404 ? 'err.playlistNotFound' : 'err.playlistLoad';
+        socket.emit('lobby:error', { key }); return;
       }
     }
 
@@ -949,6 +953,23 @@ app.get('/api/qr', async (req, res) => {
 
 // ─── Play packs (fixed playlists) ────────────────────────────────────────────
 
+// Name, cover and song count of a playlist. Development Mode apps get the count as items.total
+// (since February 2026), older apps as tracks.total – try the new name first.
+async function fetchPlaylistMeta(playlistId, token) {
+  const get = fields => axios.get(`https://api.spotify.com/v1/playlists/${playlistId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    params: { fields },
+  });
+  let r;
+  try { r = await get('name,images,items.total'); }
+  catch (e) { if (e.response?.status !== 400) throw e; r = await get('name,images,tracks.total'); }
+  return {
+    name: r.data.name,
+    cover: r.data.images?.[0]?.url || null,
+    trackCount: r.data.items?.total ?? r.data.tracks?.total ?? null,
+  };
+}
+
 // Returns all preset play packs incl. cover, name & track count,
 // fetched live from Spotify (name/cover may change there).
 app.get('/api/preset-packs', async (req, res) => {
@@ -957,16 +978,8 @@ app.get('/api/preset-packs', async (req, res) => {
   try {
     const packs = await Promise.all(PRESET_PACKS.map(async (pack) => {
       try {
-        const r = await axios.get(`https://api.spotify.com/v1/playlists/${pack.playlistId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { fields: 'name,images,tracks.total' },
-        });
-        return {
-          ...pack,
-          spotifyName: pack.name,
-          cover: r.data.images?.[0]?.url || null,
-          trackCount: r.data.tracks?.total ?? null,
-        };
+        const meta = await fetchPlaylistMeta(pack.playlistId, token);
+        return { ...pack, spotifyName: pack.name, cover: meta.cover, trackCount: meta.trackCount };
       } catch (e) {
         return { ...pack, spotifyName: pack.name, cover: null, trackCount: null, error: true };
       }
@@ -982,16 +995,7 @@ app.get('/api/playlist-info', async (req, res) => {
   const { id, token } = req.query;
   if (!id || !token) return res.status(400).json({ error: 'id oder token fehlt' });
   try {
-    const r = await axios.get(`https://api.spotify.com/v1/playlists/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-      params: { fields: 'name,images,tracks.total' },
-    });
-    res.json({
-      id,
-      name: r.data.name,
-      cover: r.data.images?.[0]?.url || null,
-      trackCount: r.data.tracks?.total ?? null,
-    });
+    res.json({ id, ...(await fetchPlaylistMeta(id, token)) });
   } catch (err) {
     res.status(404).json({ error: 'Playlist nicht gefunden' });
   }

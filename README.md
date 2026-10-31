@@ -135,8 +135,12 @@ The Redirect URI in your Spotify app must match `REDIRECT_URI` in `.env` exactly
 **Spotify login fails with "Invalid client secret"**
 The secret in `.env` is outdated (e.g. after rotating it in the dashboard). Update `.env` and run `docker compose up -d`.
 
-**Only my own account can log in as host**
-New Spotify apps run in *development mode*: add the Spotify accounts of your hosts under **User Management** in the dashboard.
+**"Spotify only shares songs from playlists you own…" / 403 when starting with a play pack or playlist**
+Since February 2026, Spotify apps in *Development Mode* may only read the songs of playlists the logged-in host **owns or collaborates on** ([Spotify migration guide](https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide)). The preset play packs belong to other accounts, so in Development Mode they show their cover but can't be played.
+Workaround: open the playlist in Spotify, select all songs → **Add to playlist** → **New playlist**, then use that copy via **Own playlist**. Apps with *Extended Quota* are not affected.
+
+**Only some accounts can log in as host**
+Apps in Development Mode allow up to **5 users**, and the app owner needs Spotify Premium. Add the Spotify accounts of your hosts under **User Management** in the dashboard.
 
 **No sound / "Spotify Premium required"**
 The host needs Spotify Premium. If you play on a Spotify Connect device, open Spotify on that device first so it shows up in the device list.
