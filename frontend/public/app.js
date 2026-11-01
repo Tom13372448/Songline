@@ -127,6 +127,10 @@ window.addEventListener('DOMContentLoaded', () => {
     // Back from the Spotify login started via "Song Battle"
     store.del('pendingBattle');
     openBattle();
+  } else if (at && store.get('pendingQuiz')) {
+    // Back from the Spotify login started via "Intro Quiz"
+    store.del('pendingQuiz');
+    openQuiz();
   } else if (at && store.get('pendingCreate')) {
     // Back from the Spotify login started via "host game"
     store.del('pendingCreate');

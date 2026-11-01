@@ -19,6 +19,7 @@ Everyone plays in the browser on their phone, tablet or laptop. Only the host ne
 - **Guess – Easy / Hard** – guess the title (and artist). Typo-tolerant, with suggestions while typing.
 - **Teams** – 2–4 teams with a shared timeline; any team member may play for their team.
 - **Song Battle (solo)** – 16, 32 or 64 songs (random from Spotify, a play pack or your own playlist) in a knockout bracket: listen to every duel and pick the winner until one song is left.
+- **Intro Quiz (solo)** – hear 1 second from the start of a song, then 2, 3, 4, 5 seconds and finally the whole song. Guess it as early as possible (typo-tolerant, with suggestions) – the sooner, the more points.
 
 **Party features**
 - **TV view** for a TV or projector: whose turn it is, the active timeline, SONGLINE! countdown, reveal with cover art, leaderboard and podium.
@@ -170,6 +171,7 @@ frontend/public/
   app.js            Client logic
   tv.js             TV view
   battle.js         Song Battle (solo knockout tournament)
+  quiz.js           Intro Quiz (solo, guess songs from 1–5 second snippets)
   effects.js        Sounds and confetti
   styles.css        Styles (desktop, mobile, TV)
 nginx/default.conf  HTTPS reverse proxy

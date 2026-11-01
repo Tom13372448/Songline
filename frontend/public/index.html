@@ -101,6 +101,12 @@
       <span class="menu-item-text"><b data-i18n="menu.battle">Song-Battle</b><small data-i18n="menu.battleSub">Solo-Turnier mit 16, 32 oder 64 Songs</small></span>
       <span class="menu-item-arrow">›</span>
     </button>
+
+    <button class="menu-item menu-item-battle" onclick="openQuiz()">
+      <span class="menu-item-icon">⏱️</span>
+      <span class="menu-item-text"><b data-i18n="menu.quiz">Intro-Quiz</b><small data-i18n="menu.quizSub">Erkenne Songs nach 1, 2, 3 … Sekunden</small></span>
+      <span class="menu-item-arrow">›</span>
+    </button>
   </nav>
 
   <div class="menu-secondary">
@@ -196,6 +202,92 @@
       <button class="btn-secondary" onclick="playChampion()" data-i18n="battle.playAgain">▶ Nochmal hören</button>
       <button class="btn-secondary" onclick="openBracket()" data-i18n="battle.bracket">🗂 Turnierbaum</button>
       <button class="btn-primary" onclick="newBattle()" data-i18n="battle.new">⚔️ Neues Turnier</button>
+    </div>
+  </section>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ INTRO QUIZ (solo) -->
+<div id="screen-quiz" class="screen battle-screen">
+  <div class="battle-top">
+    <button class="btn-secondary" onclick="leaveQuiz()" data-i18n="battle.back">← Menü</button>
+    <div class="battle-brand">⏱️ <span data-i18n="menu.quiz">Intro-Quiz</span></div>
+  </div>
+
+  <!-- Setup -->
+  <section id="quiz-setup" class="battle-panel">
+    <h2 class="battle-heading" data-i18n="quiz.setupTitle">Neues Quiz</h2>
+    <p class="text-muted" data-i18n="quiz.setupText">Du hörst 1 Sekunde vom Songanfang – erkennst du ihn? Sonst gibt's 2, 3, 4, 5 Sekunden und zuletzt den ganzen Song. Je früher du ihn errätst, desto mehr Punkte.</p>
+
+    <label class="battle-label" data-i18n="quiz.count">Anzahl Songs</label>
+    <div class="battle-options">
+      <button class="battle-option quiz-count" data-count="5" onclick="setQuizCount(5)"><b>5</b><span data-i18n="battle.songs">Songs</span></button>
+      <button class="battle-option quiz-count" data-count="10" onclick="setQuizCount(10)"><b>10</b><span data-i18n="battle.songs">Songs</span></button>
+      <button class="battle-option quiz-count" data-count="20" onclick="setQuizCount(20)"><b>20</b><span data-i18n="battle.songs">Songs</span></button>
+    </div>
+
+    <label class="battle-label" data-i18n="battle.source">Songs</label>
+    <div class="battle-options">
+      <button class="battle-option quiz-source" data-source="pack" onclick="setQuizSource('pack')"><b>🎁</b><span data-i18n="battle.srcPack">Aus Play-Paket</span></button>
+      <button class="battle-option quiz-source" data-source="playlist" onclick="setQuizSource('playlist')"><b>🔗</b><span data-i18n="battle.srcPlaylist">Eigene Playlist</span></button>
+      <button class="battle-option quiz-source" data-source="random" onclick="setQuizSource('random')"><b>🎲</b><span data-i18n="battle.srcRandom">Zufällig aus Spotify</span></button>
+    </div>
+    <div class="input-group" id="quiz-pack-wrap" style="display:none"><select id="quiz-pack"></select></div>
+    <div class="input-group" id="quiz-playlist-wrap" style="display:none">
+      <input type="text" id="quiz-playlist" placeholder="https://open.spotify.com/playlist/...">
+    </div>
+
+    <div class="input-group">
+      <div class="device-head">
+        <label data-i18n="device.label">Wiedergabe-Gerät</label>
+        <button class="icon-btn device-refresh" onclick="loadDevices()" data-i18n-title="device.reload"></button>
+      </div>
+      <div class="device-list"></div>
+    </div>
+    <button class="btn-primary" onclick="startQuiz()" data-i18n="quiz.start">Quiz starten</button>
+  </section>
+
+  <!-- Loading songs -->
+  <section id="quiz-loading" class="battle-panel" style="display:none;text-align:center">
+    <div class="tvx-vinyl battle-loading-vinyl"></div>
+    <div id="quiz-loading-text" class="battle-loading-text"></div>
+    <div class="battle-progress-track"><i id="quiz-loading-bar"></i></div>
+  </section>
+
+  <!-- Guessing -->
+  <section id="quiz-play" class="battle-panel quiz-panel" style="display:none">
+    <div class="battle-duel-head">
+      <div>
+        <div class="battle-round" id="quiz-pos"></div>
+        <div class="battle-match" id="quiz-score"></div>
+      </div>
+      <div class="battle-head-actions">
+        <button class="btn-secondary" onclick="abortQuiz()" data-i18n="battle.abort">Abbrechen</button>
+      </div>
+    </div>
+    <div class="battle-progress-track"><i id="quiz-progress"></i></div>
+
+    <div class="quiz-stages" id="quiz-stages"></div>
+
+    <div id="quiz-ask">
+      <button class="quiz-play" id="quiz-play-btn" onclick="playQuizSnippet()"></button>
+      <div class="input-group quiz-guess">
+        <input type="text" id="quiz-input" autocomplete="off" oninput="onQuizInput()" placeholder="Titel oder Titel – Interpret" data-i18n-ph="quiz.inputPh">
+        <div class="suggest-list" id="quiz-suggest"></div>
+      </div>
+      <div class="quiz-actions">
+        <button class="btn-secondary" id="quiz-skip" onclick="skipQuizStage()"></button>
+        <button class="btn-primary" onclick="submitQuizGuess()" data-i18n="quiz.guess">✓ Raten</button>
+      </div>
+    </div>
+    <ul class="quiz-guesses" id="quiz-guesses"></ul>
+    <div id="quiz-reveal" style="display:none"></div>
+  </section>
+
+  <!-- Result -->
+  <section id="quiz-end" class="battle-panel" style="display:none">
+    <div id="quiz-end-body"></div>
+    <div class="battle-end-actions">
+      <button class="btn-primary" onclick="newQuiz()" data-i18n="quiz.new">⏱️ Neues Quiz</button>
     </div>
   </section>
 </div>
@@ -678,5 +770,6 @@
 <script src="/app.js"></script>
 <script src="/tv.js"></script>
 <script src="/battle.js"></script>
+<script src="/quiz.js"></script>
 </body>
 </html>
