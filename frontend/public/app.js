@@ -1618,7 +1618,7 @@ function showVerdict(correct, gaveUp, track, currentPlayerName, stolenBy, tokenE
   const classic = gameMode === 'classic';
   const vp = { song: name, artist, year: yearStr, yearPlain: year || '?' };
   document.getElementById('verdict-pts-label').textContent =
-    L(classic ? 'v.card' : 'v.point') + (tokenEarned ? L('v.tokenEarned') : '');
+    L(classic ? 'v.card' : 'v.point') + (tokenEarned && isMyTurn() ? L('v.tokenEarned') : ''); // only the earner sees the token
 
   if (stolenBy) {
     document.getElementById('verdict-icon').textContent = '📣';

@@ -2441,3 +2441,11 @@ body.mobile #challenge-panel .challenge-actions {
 }
 body.mobile #challenge-panel .challenge-actions > button { padding: 12px 10px; }
 body.mobile #screen-game:has(#challenge-panel[style*="block"]) { padding-bottom: calc(190px + env(safe-area-inset-bottom)); }
+
+/* ── Phone rendering: no blur layers or endless animations (they cause flicker/ghosting on many phones) ── */
+body.mobile * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+body.mobile #action-row, body.mobile #challenge-panel { background: #0f0c1d; }
+body.mobile .mystery-icon { animation: none; }
+body.mobile .timeline-drop.placed { animation: none; box-shadow: 0 0 0 3px var(--accent-glow); }
+body.mobile .toast { opacity: 0; visibility: hidden; transition: transform 0.3s ease, opacity 0.3s ease, visibility 0s 0.3s; }
+body.mobile .toast.show { opacity: 1; visibility: visible; transition: transform 0.3s ease, opacity 0.3s ease; }
