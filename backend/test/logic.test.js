@@ -75,3 +75,11 @@ test('judgePlacement: variants original / pro / expert', () => {
   assert.ok(judgePlacement({ ...base, ...names, variant: 'expert', guessYear: '1988' }).correct);
   assert.ok(!judgePlacement({ ...base, ...names, variant: 'pro', slotIndex: 0 }).correct, 'wrong slot');
 });
+
+test('rankSuggestions: exact match first, no case duplicates', () => {
+  const { rankSuggestions } = require('../game-logic');
+  assert.deepStrictEqual(
+    rankSuggestions('janet jackson', ['Michael Jackson', "Destiny's Child", 'TLC', 'Janet Jackson Witman', 'Janet Jackson', 'JANET JACKSON', 'Janet Jackson Beily']),
+    ['Janet Jackson', 'Janet Jackson Witman', 'Janet Jackson Beily', 'Michael Jackson', "Destiny's Child", 'TLC']);
+  assert.deepStrictEqual(rankSuggestions('wonder', ['Wonderwall', 'wonderwall', 'Wonderwall (Remastered)']), ['Wonderwall', 'Wonderwall (Remastered)']);
+});

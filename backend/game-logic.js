@@ -51,6 +51,31 @@ function artistMatches(guess, artists) {
   return names.some(n => fuzzyEqual(guess, n)) || fuzzyEqual(guess, names.join(' '));
 }
 
+// Suggestions: no duplicates that only differ in spelling/case, best match first
+// (exact → starts with → contains the typed words → Spotify's order)
+function rankSuggestions(query, names, limit = 6) {
+  const q = normalize(query);
+  const seen = new Set();
+  const unique = names.filter(n => {
+    const k = normalize(n);
+    if (!k || seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+  const words = q.split(' ').filter(Boolean);
+  const rank = n => {
+    const k = normalize(n);
+    if (k === q) return 0;
+    if (k.startsWith(q)) return 1;
+    if (words.every(w => k.includes(w))) return 2;
+    return 3;
+  };
+  return unique.map((n, i) => ({ n, i, r: rank(n) }))
+    .sort((a, b) => a.r - b.r || a.i - b.i)
+    .map(x => x.n)
+    .slice(0, limit);
+}
+
 function albumYear(track) {
   return parseInt(track?.album?.release_date?.split('-')[0]) || null;
 }
@@ -101,6 +126,7 @@ function judgePlacement({ variant, timeline, slotIndex, track, guessTitle, guess
 }
 
 module.exports = {
+  rankSuggestions,
   normalize, cleanTitle, levenshtein, fuzzyEqual, titleMatches, artistMatches,
   albumYear, trackYear, timelineCard, slotFits, earliestYear, judgePlacement,
 };

@@ -436,10 +436,11 @@
       <div class="pack-grid" id="pack-grid">
         <p class="text-muted" style="grid-column:1/-1;text-align:center;padding:12px" data-i18n="source.loadingPacks">Lade Play-Pakete…</p>
       </div>
-      <div class="pack-link-bar">
-        <span class="pack-link-hint" data-i18n="links.hint">Play-Pakete starten nicht? Kopiere sie einmal in Spotify und verknüpfe sie hier.</span>
-        <button class="btn-secondary" id="btn-auto-link" onclick="autoLinkPacks()" data-i18n="links.auto">🔗 Kopien finden</button>
-        <button class="btn-secondary" onclick="openPackLinks()" data-i18n="links.manage">✎ Verknüpfungen</button>
+      <!-- Only shown when the selected pack has no own copy (Spotify Development Mode) -->
+      <div class="pack-link-bar" id="pack-link-bar" style="display:none">
+        <span class="pack-link-hint" data-i18n="links.hint">Für dieses Paket hast du noch keine eigene Kopie – im Development Mode spielt Spotify es dann nicht ab.</span>
+        <a class="btn-secondary" id="pack-link-open" target="_blank" rel="noopener" data-i18n="links.open">In Spotify öffnen ↗</a>
+        <button class="btn-secondary" onclick="openPackLinks()" data-i18n="links.manage">✎ Verknüpfen</button>
       </div>
     </div>
 
@@ -575,7 +576,6 @@
     <div class="flex-row challenge-actions" style="justify-content:center;gap:10px;flex-wrap:wrap">
       <button class="btn-primary" id="btn-songline" onclick="callSongline()" style="width:auto;background:var(--hot);color:var(--black)" disabled data-i18n="game.callSongline">📣 SONGLINE! (1 🪙)</button>
       <button class="btn-secondary" id="btn-pass" onclick="passChallenge()" data-i18n="game.pass">Passen</button>
-      <button class="btn-secondary" id="btn-resolve" onclick="resolveNow()" data-i18n="game.revealNow">Jetzt aufdecken</button>
     </div>
   </div>
 

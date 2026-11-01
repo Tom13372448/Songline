@@ -6,7 +6,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const QRCode = require('qrcode');
 const {
-  cleanTitle, trackYear, timelineCard, slotFits, earliestYear, judgePlacement, titleMatches, artistMatches,
+  cleanTitle, rankSuggestions, trackYear, timelineCard, slotFits, earliestYear, judgePlacement, titleMatches, artistMatches,
 } = require('./game-logic');
 const persistence = require('./persistence');
 const packLinks = require('./pack-links');
@@ -720,7 +720,7 @@ io.on('connection', (socket) => {
       const names = type === 'artist'
         ? r.data.artists.items.map(a => a.name)
         : r.data.tracks.items.map(t => cleanTitle(t.name));
-      reply([...new Set(names)].slice(0, 6));
+      reply(rankSuggestions(query, names));
     } catch (e) {
       if (e.response?.status === 401) io.to(lobby.hostId).emit('spotify:refresh-needed');
       reply([]);
@@ -781,14 +781,6 @@ io.on('connection', (socket) => {
     lobby.turn.passed.add(unitOf(lobby, player));
     broadcast(lobby, 'game:challenge');
     maybeFinishChallenge(lobby);
-  });
-
-  // Active unit or host reveals without waiting for the countdown
-  socket.on('game:resolve', ({ code }) => {
-    const lobby = activeLobby(code);
-    if (lobby?.turn?.phase !== 'challenge') return;
-    if (!actsForCurrent(lobby, socket.id) && lobby.hostId !== socket.id) return;
-    resolveTurn(lobby);
   });
 
   // Classic: trade 3 tokens for a card placed correctly into the timeline
@@ -1007,13 +999,18 @@ app.get('/api/preset-packs', async (req, res) => {
   if (!token) return res.status(400).json({ error: 'Token fehlt' });
   try {
     let links = {};
-    try { links = packLinks.forUser(await spotifyUserId(token)); } catch (e) { /* no links without a user */ }
+    try {
+      // New copies in the library are picked up automatically, no button needed
+      const userId = await spotifyUserId(token);
+      await autoLinkPacks(token, userId).catch(() => {});
+      links = packLinks.forUser(userId);
+    } catch (e) { /* no links without a user */ }
     const packs = await Promise.all(PRESET_PACKS.map(async (pack) => {
       const base = { ...pack, originalId: pack.playlistId, spotifyName: pack.name };
       let meta = null;
       try { meta = await fetchPlaylistMeta(pack.playlistId, token); } catch (e) { /* cover stays empty */ }
       const link = links[pack.id];
-      if (link) {
+      if (link?.playlistId) {
         try {
           const copy = await fetchPlaylistMeta(link.playlistId, token);
           return { ...base, playlistId: link.playlistId, linked: { name: copy.name }, cover: meta?.cover || copy.cover, trackCount: copy.trackCount };
@@ -1038,23 +1035,33 @@ app.get('/api/my-playlists', async (req, res) => {
   }
 });
 
-// Links every pack whose copy can be found by name in the host's library
+// Links every not yet linked pack whose copy can be found by name in the host's library
+const liveNames = new Map(); // pack id → playlist name on Spotify
+async function autoLinkPacks(token, userId) {
+  const existing = packLinks.forUser(userId);
+  const open = PRESET_PACKS.filter(p => !existing[p.id]);
+  if (!open.length) return 0;
+  const mine = (await fetchMyPlaylists(token, userId))
+    .filter(p => !Object.values(existing).some(l => l.playlistId === p.id));
+  if (!mine.length) return 0;
+  const packs = await Promise.all(open.map(async (pack) => {
+    if (!liveNames.has(pack.id)) {
+      try { liveNames.set(pack.id, (await fetchPlaylistMeta(pack.playlistId, token)).name); } catch (e) { /* name from the list is enough */ }
+    }
+    return { id: pack.id, names: [pack.name, liveNames.get(pack.id)].filter(Boolean) };
+  }));
+  const found = packLinks.matchCopies(packs, mine);
+  for (const [packId, playlist] of Object.entries(found)) packLinks.setLink(userId, packId, playlist);
+  return Object.keys(found).length;
+}
+
 app.post('/api/pack-links/auto', async (req, res) => {
   const { token } = req.body || {};
   if (!token) return res.status(400).json({ error: 'Token fehlt' });
   try {
     const userId = await spotifyUserId(token);
-    const mine = await fetchMyPlaylists(token, userId);
-    const packs = await Promise.all(PRESET_PACKS.map(async (pack) => {
-      let live = null;
-      try { live = (await fetchPlaylistMeta(pack.playlistId, token)).name; } catch (e) { /* name from the list is enough */ }
-      return { id: pack.id, names: [pack.name, live].filter(Boolean) };
-    }));
-    const existing = packLinks.forUser(userId);
-    const found = packLinks.matchCopies(packs.filter(p => !existing[p.id]),
-      mine.filter(p => !Object.values(existing).some(l => l.playlistId === p.id)));
-    for (const [packId, playlist] of Object.entries(found)) packLinks.setLink(userId, packId, playlist);
-    res.json({ linked: Object.keys(found).length, total: Object.keys(packLinks.forUser(userId)).length, packs: PRESET_PACKS.length });
+    const linked = await autoLinkPacks(token, userId);
+    res.json({ linked, total: Object.values(packLinks.forUser(userId)).filter(l => l.playlistId).length, packs: PRESET_PACKS.length });
   } catch (err) {
     res.status(err.response?.status || 500).json({ error: 'Verknüpfen fehlgeschlagen' });
   }

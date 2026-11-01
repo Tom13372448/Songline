@@ -714,6 +714,10 @@ function renderPackGrid() {
   const el = document.getElementById('pack-grid');
   if (!el) return;
   if (!presetPacks.length) return; // still loading / no token
+  // Hint + shortcuts only for a selected pack without an own copy
+  const sel = presetPacks.find(p => p.id === selectedPresetId);
+  document.getElementById('pack-link-bar').style.display = sel && !sel.linked ? '' : 'none';
+  if (sel) document.getElementById('pack-link-open').href = `https://open.spotify.com/playlist/${sel.originalId || sel.playlistId}`;
   el.innerHTML = presetPacks.map(p => `
     <div class="pack-card ${selectedPresetId === p.id ? 'selected' : ''}" onclick="selectPack('${p.id}')">
       ${p.cover ? `<img class="pack-cover" src="${p.cover}" alt="">` : `<div class="pack-cover-placeholder">${p.icon || '🎵'}</div>`}
@@ -727,26 +731,6 @@ function renderPackGrid() {
 }
 
 // ── Play packs → own Spotify copies (Development Mode only reads own playlists) ──
-async function autoLinkPacks() {
-  if (!state.accessToken) return;
-  const btn = document.getElementById('btn-auto-link');
-  btn.disabled = true;
-  try {
-    const res = await apiFetch('/api/pack-links/auto', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: state.accessToken }),
-    });
-    if (!res.ok) throw new Error(res.status);
-    const r = await res.json();
-    showToast(r.linked ? L('links.found', { n: r.linked, total: r.total, packs: r.packs }) : L('links.none'));
-    await loadPresetPacks();
-    emitSettings();
-  } catch (e) {
-    showToast(L('links.failed'));
-  } finally {
-    btn.disabled = false;
-  }
-}
-
 async function openPackLinks() {
   if (!state.accessToken) return;
   document.getElementById('links-modal').classList.add('show');
@@ -1442,6 +1426,8 @@ function submitGuess() {
 // ════════════════════════════════════════════════════════════════
 // TIMELINE
 // ════════════════════════════════════════════════════════════════
+const TIMELINE_ROW = 5; // cards per timeline row
+
 function renderTimeline() {
   const tl = [...(currentUnit()?.timeline || [])].sort((a, b) => a.year - b.year);
   const el = document.getElementById('timeline');
@@ -1455,6 +1441,8 @@ function renderTimeline() {
   const activeSlot = inChallenge ? turn.slotIndex : state.selectedSlotIndex;
 
   for (let i = 0; i < slots; i++) {
+    // Max. 5 cards per row – a new row starts with the slot after every 5th card
+    if (i % TIMELINE_ROW === 0) html += `${i ? '</div>' : ''}<div class="timeline-row">`;
     // Drop zone
     const challenge = inChallenge && turn.challenges.find(c => c.slotIndex === i);
     const classes = [
@@ -1491,7 +1479,7 @@ function renderTimeline() {
     }
   }
 
-  el.innerHTML = html;
+  el.innerHTML = html + '</div>';
 }
 
 function slotLabel(tl, i) {
@@ -1574,7 +1562,7 @@ function attachSuggest(inputId, field) {
       socket.emit('game:suggest', { code: state.lobby.code, q, field }, names => {
         // Discard outdated responses
         if (mySeq !== seq || document.activeElement !== input) return;
-        items = names.filter(n => n.toLowerCase() !== q.toLowerCase());
+        items = names.filter(n => n !== q); // the correctly spelled name stays (e.g. "janet jackson" → "Janet Jackson")
         active = -1;
         render();
       });
@@ -1647,7 +1635,6 @@ function updateChallengeUI() {
   document.getElementById('btn-songline').style.display = canCall ? '' : 'none';
   document.getElementById('btn-songline').disabled = state.challengeSlot === null;
   document.getElementById('btn-pass').style.display = canCall ? '' : 'none';
-  document.getElementById('btn-resolve').style.display = isMyTurn() || isHost() ? '' : 'none';
 
   const tick = () => {
     const left = Math.max(0, Math.ceil((turn.deadline - Date.now()) / 1000));
@@ -1664,10 +1651,6 @@ function callSongline() {
 
 function passChallenge() {
   if (state.lobby) socket.emit('game:pass', { code: state.lobby.code });
-}
-
-function resolveNow() {
-  if (state.lobby) socket.emit('game:resolve', { code: state.lobby.code });
 }
 
 function buyCard() {

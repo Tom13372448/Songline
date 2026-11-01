@@ -8,7 +8,7 @@ const path = require('path');
 const DATA_DIR = process.env.DATA_DIR;
 const FILE = DATA_DIR && path.join(DATA_DIR, 'pack-links.json');
 
-let links = null; // { [spotifyUserId]: { [packId]: { playlistId, name } } }
+let links = null; // { [spotifyUserId]: { [packId]: { playlistId, name } | { ignored: true } } }
 
 function all() {
   if (links) return links;
@@ -36,8 +36,8 @@ function forUser(userId) {
 function setLink(userId, packId, playlist) {
   const map = all();
   map[userId] = map[userId] || {};
-  if (playlist) map[userId][packId] = { playlistId: playlist.id, name: playlist.name };
-  else delete map[userId][packId];
+  // Unlinking by hand is remembered, so the automatic search doesn't link the pack again
+  map[userId][packId] = playlist ? { playlistId: playlist.id, name: playlist.name } : { ignored: true };
   save();
 }
 

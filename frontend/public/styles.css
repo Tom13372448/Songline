@@ -2510,3 +2510,12 @@ body.mobile .quiz-stage span { font-size: 0.68rem; }
 .quiz-squares i.skipped { background: #4b4466; border-color: #4b4466; }
 .quiz-squares i.wrong { background: #ef4444; border-color: #ef4444; }
 .quiz-squares i.right { background: #22c55e; border-color: #22c55e; }
+
+/* ── Timeline in rows of max. 5 cards (desktop); phones keep the vertical list ── */
+.timeline { flex-direction: column; align-items: flex-start; gap: 10px; min-width: 0; }
+.timeline-row { display: flex; align-items: stretch; }
+.timeline-row .timeline-drop { width: 54px; }
+.timeline-row .connector { width: 10px; }
+body.mobile .timeline-row { display: contents; }
+.pack-link-bar a.btn-secondary { text-decoration: none; display: inline-block; }
+.timeline-row > .timeline-slot:last-child .connector:last-child { visibility: hidden; }

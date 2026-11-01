@@ -84,13 +84,17 @@ test('Classic original: token, pass, skip, no idea, SONGLINE!', async () => {
   b.emit('game:next', { code });
   assert.strictEqual(current((await needs).lobby).name, 'A');
 
-  // Turn 2: A places, host reveals immediately
+  // Turn 2: A places; nobody can reveal early – only when everyone has passed
   await selectTrack(g, track('2', 1980));
   ch = wait(b, 'game:challenge');
   a.emit('game:confirm', { code, slotIndex: 0 });
   await ch;
-  verdict = wait(b, 'game:verdict');
   host.emit('game:resolve', { code });
+  ch = wait(b, 'game:challenge');
+  host.emit('game:pass', { code });
+  assert.strictEqual((await ch).lobby.turn.phase, 'challenge');
+  verdict = wait(b, 'game:verdict');
+  b.emit('game:pass', { code });
   assert.ok((await verdict).correct);
   needs = wait(b, 'game:needs-track');
   a.emit('game:next', { code });

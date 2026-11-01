@@ -36,12 +36,7 @@ let url;
 test.before(async () => { await start(0); url = `http://localhost:${server.address().port}`; });
 test.after(() => { server.close(); setTimeout(() => process.exit(0), 100).unref(); });
 
-test('auto-link finds own copies, packs then play the copy', async () => {
-  const r = await (await fetch(`${url}/api/pack-links/auto`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: 't' }),
-  })).json();
-  assert.strictEqual(r.linked, 1); // the foreign "Christmas" playlist is not a copy
-
+test('loading the packs links own copies automatically, packs then play the copy', async () => {
   const { packs } = await (await fetch(`${url}/api/preset-packs?token=t`)).json();
   const rock = packs.find(p => p.id === 'rock');
   assert.strictEqual(rock.playlistId, 'myrock');
@@ -59,5 +54,5 @@ test('manual unlink and rejecting foreign playlists', async () => {
   assert.strictEqual((await post({ packId: 'nope', playlistId: null })).status, 400);
   assert.strictEqual((await post({ packId: 'rock', playlistId: null })).status, 200);
   const { packs } = await (await fetch(`${url}/api/preset-packs?token=t`)).json();
-  assert.strictEqual(packs.find(p => p.id === 'rock').linked, undefined);
+  assert.strictEqual(packs.find(p => p.id === 'rock').linked, undefined); // stays unlinked, no auto re-link
 });
