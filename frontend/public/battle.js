@@ -83,29 +83,32 @@ function slimTrack(t) {
 
 // Random songs from all of Spotify: random 2-letter searches at random offsets,
 // at most one song per artist, preferring well-known tracks if Spotify still reports popularity
-// (Development Mode apps no longer get that field since February 2026)
+// (Development Mode apps no longer get that field since February 2026).
+// Sparing with the API quota: one request at a time, up to 4 songs per request, a hard cap
+// on requests, and a 429 (quota used up) stops at once instead of looking like "no songs".
+const RANDOM_PER_REQUEST = 4;
 async function fetchRandomTracks(count, onProgress) {
+  if (spotifyBlockedFor()) throw new Error('rateLimit');
   const found = new Map();
   const artists = new Set();
   const letters = 'abcdefghijklmnopqrstuvwxyz';
   const vowels = 'aeiou';
-  let attempts = 0;
-  while (found.size < count && attempts < count * 4) {
-    const batch = Array.from({ length: 5 }, () => {
-      attempts++;
-      const q = letters[Math.floor(Math.random() * 26)] + vowels[Math.floor(Math.random() * 5)];
-      const offset = Math.floor(Math.random() * 150);
-      return spotifyApi(`/search?q=${encodeURIComponent(q)}&type=track&limit=10&offset=${offset}`)
-        .then(r => (r.ok ? r.json() : null)).catch(() => null);
-    });
-    for (const data of await Promise.all(batch)) {
-      const items = shuffle(data?.tracks?.items || []);
-      const pick = items.find(t => t?.id && !found.has(t.id) && !artists.has(t.artists?.[0]?.id)
-        && (t.popularity === undefined || t.popularity >= 45) && !t.is_local);
-      if (pick && found.size < count) {
-        found.set(pick.id, slimTrack(pick));
-        artists.add(pick.artists?.[0]?.id);
-      }
+  const maxRequests = Math.ceil(count / RANDOM_PER_REQUEST) * 2 + 4; // 16 → 12, 64 → 36
+  for (let i = 0; i < maxRequests && found.size < count; i++) {
+    const q = letters[Math.floor(Math.random() * 26)] + vowels[Math.floor(Math.random() * 5)];
+    const offset = Math.floor(Math.random() * 150);
+    const res = await spotifyApi(`/search?q=${encodeURIComponent(q)}&type=track&limit=10&offset=${offset}`).catch(() => null);
+    if (res?.status === 429) throw new Error('rateLimit');
+    if (!res?.ok) continue;
+    const items = shuffle((await res.json()).tracks?.items || []);
+    let taken = 0;
+    for (const t of items) {
+      if (found.size >= count || taken >= RANDOM_PER_REQUEST) break;
+      if (!t?.id || found.has(t.id) || artists.has(t.artists?.[0]?.id) || t.is_local) continue;
+      if (t.popularity !== undefined && t.popularity < 45) continue;
+      found.set(t.id, slimTrack(t));
+      artists.add(t.artists?.[0]?.id);
+      taken++;
     }
     onProgress(found.size);
   }
@@ -121,6 +124,7 @@ async function fetchPlaylistTracks(playlistId, count, onProgress) {
     const res = await spotifyApi(url);
     if (!res.ok) {
       if (res.status === 403) throw new Error('forbidden');
+      if (res.status === 429) throw new Error('rateLimit');
       break;
     }
     const data = await res.json();
@@ -163,7 +167,7 @@ async function startBattle() {
   try {
     tracks = playlistId ? await fetchPlaylistTracks(playlistId, size, progress) : await fetchRandomTracks(size, progress);
   } catch (e) {
-    showToast(L(e.message === 'forbidden' ? 'err.playlistForbidden' : 'err.playlistLoad'));
+    showToast(songLoadError(e));
     showBattleView('setup');
     return;
   }

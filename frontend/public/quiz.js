@@ -83,7 +83,7 @@ async function startQuiz() {
   try {
     tracks = playlistId ? await fetchPlaylistTracks(playlistId, count, progress) : await fetchRandomTracks(count, progress);
   } catch (e) {
-    showToast(L(e.message === 'forbidden' ? 'err.playlistForbidden' : 'err.playlistLoad'));
+    showToast(songLoadError(e));
     showQuizView('setup');
     return;
   }

@@ -1150,7 +1150,37 @@ async function spotifyApi(path, opts = {}) {
   });
   let res = await doFetch();
   if (res.status === 401 && await refreshAccessToken()) res = await doFetch();
+  if (res.status === 429) noteRateLimit(res);
   return res;
+}
+
+// Spotify answers 429 when the app's request quota is used up (Retry-After = seconds to wait,
+// up to a day in Development Mode). Remember it so we don't keep hammering the API.
+function noteRateLimit(res) {
+  const secs = Number(res.headers.get('Retry-After')); // only readable if Spotify exposes it via CORS
+  store.set('spotifyBlockedUntil', Date.now() + (secs || 60) * 1000);
+  store.set('spotifyWaitKnown', !!secs);
+}
+
+// Remaining wait in ms (0 = not blocked)
+function spotifyBlockedFor() {
+  return Math.max(0, (Number(store.get('spotifyBlockedUntil')) || 0) - Date.now());
+}
+
+// "20 Std. 56 Min." / "2 Min." / "45 Sek."
+function fmtWait(ms) {
+  const m = Math.ceil(ms / 60000);
+  if (ms < 60000) return L('wait.sec', { n: Math.ceil(ms / 1000) });
+  if (m < 60) return L('wait.min', { n: m });
+  return L('wait.hours', { h: Math.floor(m / 60), m: m % 60 });
+}
+
+// Error text for loading songs (battle / quiz)
+function songLoadError(e) {
+  if (e.message === 'rateLimit') {
+    return store.get('spotifyWaitKnown') ? L('err.rateLimit', { time: fmtWait(spotifyBlockedFor()) }) : L('err.rateLimitNoTime');
+  }
+  return L(e.message === 'forbidden' ? 'err.playlistForbidden' : 'err.playlistLoad');
 }
 
 async function refreshAccessToken() {
