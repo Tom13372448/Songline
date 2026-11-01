@@ -437,19 +437,21 @@
       </div>
       <div class="time-label" id="time-label">0:30</div>
     </div>
-    <div class="volume-row" id="volume-row" style="display:none">
-      <button class="volume-icon" id="volume-icon" onclick="toggleMute()" data-i18n-title="game.mute">🔊</button>
-      <input type="range" id="volume" class="volume-slider" min="0" max="100" step="1" oninput="setVolume(this.value)" data-i18n-title="game.volume">
-      <span class="volume-value" id="volume-value">80</span>
-    </div>
-    <div id="audio-device-picker" class="device-picker" style="display:none">
-      <button class="device-chip" id="device-chip" onclick="toggleDevicePopover()"></button>
-      <div class="device-popover" id="device-popover">
-        <div class="device-head">
-          <label data-i18n="device.playOn">Wiedergabe auf</label>
-          <button class="icon-btn device-refresh" onclick="loadDevices()" data-i18n-title="device.reload"></button>
+    <div class="audio-extras">
+      <div class="volume-row" id="volume-row" style="display:none">
+        <button class="volume-icon" id="volume-icon" onclick="toggleMute()" data-i18n-title="game.mute">🔊</button>
+        <input type="range" id="volume" class="volume-slider" min="0" max="100" step="1" oninput="setVolume(this.value)" data-i18n-title="game.volume">
+        <span class="volume-value" id="volume-value">80</span>
+      </div>
+      <div id="audio-device-picker" class="device-picker" style="display:none">
+        <button class="device-chip" id="device-chip" onclick="toggleDevicePopover()"></button>
+        <div class="device-popover" id="device-popover">
+          <div class="device-head">
+            <label data-i18n="device.playOn">Wiedergabe auf</label>
+            <button class="icon-btn device-refresh" onclick="loadDevices()" data-i18n-title="device.reload"></button>
+          </div>
+          <div class="device-list"></div>
         </div>
-        <div class="device-list"></div>
       </div>
     </div>
     <div id="audio-host-message" style="display:none;text-align:center;padding:12px;color:var(--muted);font-size:0.8rem" data-i18n="game.hostControls">▶ Der Host steuert die Musik über Spotify.</div>
@@ -471,6 +473,7 @@
   <!-- SONGLINE! round (classic) -->
   <div class="challenge-panel" id="challenge-panel" style="display:none">
     <div class="challenge-title">SONGLINE! <span id="challenge-countdown"></span></div>
+    <div class="challenge-placed" id="challenge-placed"></div>
     <div class="text-muted" id="challenge-text" style="margin:6px 0 12px"></div>
     <div class="flex-row challenge-actions" style="justify-content:center;gap:10px;flex-wrap:wrap">
       <button class="btn-primary" id="btn-songline" onclick="callSongline()" style="width:auto;background:var(--hot);color:var(--black)" disabled data-i18n="game.callSongline">📣 SONGLINE! (1 🪙)</button>

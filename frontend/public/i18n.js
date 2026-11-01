@@ -198,6 +198,8 @@ const I18N = {
     'ch.called': 'Dein SONGLINE! steht – warte aufs Aufdecken…',
     'ch.noTokens': 'Du hast keine Tokens für SONGLINE!. Warte aufs Aufdecken…',
     'ch.wait': 'Warte aufs Aufdecken…',
+    'ch.placed': '👉 {name} hat <b>{slot}</b> gewählt',
+    'ch.placedNone': '🤷 {name} hat keinen Platz gewählt',
 
     // Verdict
     'v.next': 'Weiter →',
@@ -540,6 +542,8 @@ const I18N = {
     'ch.called': 'Your SONGLINE! is in – waiting for the reveal…',
     'ch.noTokens': 'You have no tokens for SONGLINE!. Waiting for the reveal…',
     'ch.wait': 'Waiting for the reveal…',
+    'ch.placed': '👉 {name} placed it <b>{slot}</b>',
+    'ch.placedNone': '🤷 {name} didn\'t pick a slot',
 
     'v.next': 'Next →',
     'v.point': 'point',

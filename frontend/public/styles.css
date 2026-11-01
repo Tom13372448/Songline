@@ -2306,3 +2306,55 @@ body:not(.mobile) .menu-panel { padding: 30px; }
 body:not(.mobile) .menu-name { margin-bottom: 20px; }
 body.mobile .menu-item { padding: 14px 16px; gap: 14px; grid-template-columns: 48px 1fr 18px; }
 body.mobile .menu-item-icon { width: 48px; height: 48px; }
+
+/* ══════════════════════════════════════════════════════════════
+   GAME SCREEN – compact, so scores, player and timeline fit on one screen
+   (phones have their own rules under body.mobile)
+   ══════════════════════════════════════════════════════════════ */
+.game-header { margin-bottom: 12px; }
+.current-player-label { margin-bottom: 0; }
+.current-player-name { font-size: 2rem; line-height: 1.05; }
+
+#scores-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+#scores-grid .score-card {
+  display: grid;
+  grid-template-columns: 30px auto auto;
+  column-gap: 10px;
+  align-items: center;
+  text-align: left;
+  padding: 8px 14px;
+  border-radius: 12px;
+}
+#scores-grid .score-avatar { grid-row: span 2; width: 30px; height: 30px; font-size: 0.8rem; margin: 0; }
+#scores-grid .score-name { grid-column: 2; font-size: 0.85rem; margin: 0; white-space: nowrap; }
+#scores-grid .score-members { display: none; }
+#scores-grid .score-pts { grid-column: 3; grid-row: 1 / span 2; font-size: 1.6rem; padding-left: 6px; }
+#scores-grid .score-timeline-count { grid-column: 2; font-size: 0.7rem; margin: 0; white-space: nowrap; }
+
+.track-card { padding: 16px 20px; margin-bottom: 14px; border-radius: 14px; }
+.track-hidden-state[style*="block"] { display: flex !important; }
+.track-hidden-state { align-items: center; justify-content: center; gap: 12px; padding: 0; text-align: left; flex-wrap: wrap; }
+.mystery-icon { font-size: 1.8rem; margin: 0; }
+.mystery-text { font-size: 1.4rem; margin: 0; }
+.mystery-sub { flex-basis: 100%; text-align: center; font-size: 0.8rem; }
+.track-revealed.show { align-items: center; gap: 16px; }
+.track-art, .track-art-placeholder { width: 80px; height: 80px; }
+.audio-player { margin-top: 12px; padding: 8px 14px; }
+.audio-extras { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; }
+.audio-extras .volume-row { flex: 1 1 220px; margin: 10px 0 0; }
+.audio-extras .device-picker { flex: 0 1 auto; margin: 10px 0 0; align-items: flex-end; }
+.audio-extras .device-popover { flex-basis: 100%; }
+#audio-host-message { padding: 8px 0 0; }
+
+.timeline-section { margin-bottom: 14px; }
+.challenge-panel { padding: 12px 16px; margin-bottom: 12px; scroll-margin-top: 84px; }
+.challenge-title { font-size: 1.6rem; }
+.challenge-placed { font-size: 0.95rem; margin-top: 4px; }
+.challenge-placed b { color: var(--accent); }
+#challenge-text { margin: 4px 0 10px !important; }
+.timeline-drop.placed { animation: placed-pulse 1.3s ease-in-out infinite; }
+@keyframes placed-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50% { box-shadow: 0 0 0 6px transparent; transform: translateY(-2px); }
+}
+@media (prefers-reduced-motion: reduce) { .timeline-drop.placed { animation: none; } }

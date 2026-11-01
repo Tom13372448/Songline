@@ -281,7 +281,9 @@ on('game:challenge', ({ lobby }) => {
   updateActionButtons();
   updateChallengeUI();
   if (!wasOpen && canChallenge() && navigator.vibrate) navigator.vibrate(80);
-  if (!wasOpen && canChallenge()) scrollToAction('challenge-panel');
+  if (!wasOpen) {
+    setTimeout(() => document.getElementById('challenge-panel').scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+  }
   if (wasOpen && lobby.turn.challenges.length) Effects.sound('songline');
 });
 
@@ -941,7 +943,7 @@ function renderGameState(lobby) {
   document.getElementById('current-player-display').textContent = un(cp.name);
   document.getElementById('current-player-display').style.color = cp.color || '';
   document.getElementById('round-display').textContent = L('game.round', { round: lobby.round });
-  document.getElementById('waiting-banner').style.display = myTurn ? 'none' : 'block';
+  document.getElementById('waiting-banner').style.display = 'none'; // the header already shows whose turn it is
   document.getElementById('waiting-text').textContent = L('game.waitingFor', { name: who });
 
   // Controls: only active on my turn
@@ -1384,6 +1386,7 @@ function renderTimeline() {
     const challenge = inChallenge && turn.challenges.find(c => c.slotIndex === i);
     const classes = [
       i === activeSlot && 'selected',
+      inChallenge && i === activeSlot && 'placed',
       challenge && 'challenged',
       inChallenge && state.challengeSlot === i && 'challenge-pick',
     ].filter(Boolean).join(' ');
@@ -1563,6 +1566,9 @@ function updateChallengeUI() {
   else if (!self?.tokens) text = L('ch.noTokens');
   else text = L('ch.wait');
   document.getElementById('challenge-text').textContent = text;
+  document.getElementById('challenge-placed').innerHTML = turn.slotIndex === null
+    ? L('ch.placedNone', { name: esc(un(cp.name)) })
+    : L('ch.placed', { name: esc(un(cp.name)), slot: esc(getSlotDescription(turn.slotIndex)) });
 
   const canCall = canChallenge();
   document.getElementById('btn-songline').style.display = canCall ? '' : 'none';
