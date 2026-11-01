@@ -716,9 +716,75 @@ function renderPackGrid() {
       <div class="pack-info">
         <div class="pack-name">${p.icon ? p.icon + ' ' : ''}${p.spotifyName || p.name}</div>
         <div class="pack-count">${p.trackCount != null ? L('source.songs', { n: p.trackCount }) : ''}</div>
+        ${p.linked ? `<div class="pack-linked">${L('links.badge')}</div>` : ''}
       </div>
     </div>
   `).join('');
+}
+
+// ── Play packs → own Spotify copies (Development Mode only reads own playlists) ──
+async function autoLinkPacks() {
+  if (!state.accessToken) return;
+  const btn = document.getElementById('btn-auto-link');
+  btn.disabled = true;
+  try {
+    const res = await apiFetch('/api/pack-links/auto', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: state.accessToken }),
+    });
+    if (!res.ok) throw new Error(res.status);
+    const r = await res.json();
+    showToast(r.linked ? L('links.found', { n: r.linked, total: r.total, packs: r.packs }) : L('links.none'));
+    await loadPresetPacks();
+    emitSettings();
+  } catch (e) {
+    showToast(L('links.failed'));
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function openPackLinks() {
+  if (!state.accessToken) return;
+  document.getElementById('links-modal').classList.add('show');
+  const list = document.getElementById('links-list');
+  list.innerHTML = `<p class="text-muted">${L('links.loading')}</p>`;
+  try {
+    const res = await apiFetch(`/api/my-playlists?token=${state.accessToken}`);
+    if (!res.ok) throw new Error(res.status);
+    const mine = (await res.json()).playlists || [];
+    list.innerHTML = presetPacks.map(p => `
+      <div class="links-row">
+        ${p.cover ? `<img src="${p.cover}" alt="">` : '<div class="links-cover">🎵</div>'}
+        <div class="links-main">
+          <div class="links-name">${esc(p.spotifyName || p.name)}
+            <a href="https://open.spotify.com/playlist/${esc(p.originalId || p.playlistId)}" target="_blank" rel="noopener">${L('links.open')}</a></div>
+          <select onchange="setPackLink('${p.id}', this.value)">
+            <option value="">${L('links.original')}</option>
+            ${mine.map(m => `<option value="${esc(m.id)}" ${p.linked && p.playlistId === m.id ? 'selected' : ''}>${esc(m.name)}${m.trackCount != null ? ` (${m.trackCount})` : ''}</option>`).join('')}
+          </select>
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    list.innerHTML = `<p class="text-muted">${L('links.failed')}</p>`;
+  }
+}
+
+function closePackLinks() {
+  document.getElementById('links-modal').classList.remove('show');
+}
+
+async function setPackLink(packId, playlistId) {
+  try {
+    const res = await apiFetch('/api/pack-links', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: state.accessToken, packId, playlistId: playlistId || null }),
+    });
+    if (!res.ok) throw new Error(res.status);
+    await loadPresetPacks();
+    emitSettings();
+  } catch (e) {
+    showToast(L('links.failed'));
+  }
 }
 
 function selectPack(id) {

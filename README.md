@@ -137,7 +137,7 @@ The secret in `.env` is outdated (e.g. after rotating it in the dashboard). Upda
 
 **"Spotify only shares songs from playlists you own…" / 403 when starting with a play pack or playlist**
 Since February 2026, Spotify apps in *Development Mode* may only read the songs of playlists the logged-in host **owns or collaborates on** ([Spotify migration guide](https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide)). The preset play packs belong to other accounts, so in Development Mode they show their cover but can't be played.
-Workaround: open the playlist in Spotify, select all songs → **Add to playlist** → **New playlist**, then use that copy via **Own playlist**. Apps with *Extended Quota* are not affected.
+Workaround: open the playlist in Spotify, select all songs → **Add to playlist** → **New playlist**. Then, in the lobby under the play packs, tap **Find copies** (matches copies named like the pack, e.g. "Hitster Rock") or pick the copy under **Links**. Songline remembers the link per Spotify account, and the pack plays your copy from then on. Apps with *Extended Quota* are not affected.
 
 **Only some accounts can log in as host**
 Apps in Development Mode allow up to **5 users**, and the app owner needs Spotify Premium. Add the Spotify accounts of your hosts under **User Management** in the dashboard.

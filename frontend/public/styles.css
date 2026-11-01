@@ -2449,3 +2449,17 @@ body.mobile .mystery-icon { animation: none; }
 body.mobile .timeline-drop.placed { animation: none; box-shadow: 0 0 0 3px var(--accent-glow); }
 body.mobile .toast { opacity: 0; visibility: hidden; transition: transform 0.3s ease, opacity 0.3s ease, visibility 0s 0.3s; }
 body.mobile .toast.show { opacity: 1; visibility: visible; transition: transform 0.3s ease, opacity 0.3s ease; }
+
+/* ── Play packs linked to own Spotify copies ── */
+.pack-linked { font-size: 0.66rem; font-weight: 700; color: var(--green, #22c55e); margin-top: 2px; }
+.pack-link-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: -4px 0 16px; }
+.pack-link-hint { flex: 1 1 220px; font-size: 0.75rem; color: var(--muted); }
+.pack-link-bar .btn-secondary { padding: 7px 12px; font-size: 0.78rem; white-space: nowrap; }
+.links-box { max-width: 560px; }
+.links-list { display: flex; flex-direction: column; gap: 8px; max-height: 55vh; overflow-y: auto; margin-top: 12px; }
+.links-row { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); }
+.links-row img, .links-cover { width: 44px; height: 44px; border-radius: 8px; flex-shrink: 0; object-fit: cover; display: flex; align-items: center; justify-content: center; background: var(--card-bg); }
+.links-main { flex: 1; min-width: 0; }
+.links-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; display: flex; gap: 8px; justify-content: space-between; align-items: baseline; }
+.links-name a { font-size: 0.7rem; font-weight: 400; color: var(--accent); white-space: nowrap; text-decoration: none; }
+.links-main select { width: 100%; padding: 7px 8px; font-size: 0.8rem; border-radius: 8px; background: var(--card-bg); color: var(--text); border: 1px solid var(--border); }

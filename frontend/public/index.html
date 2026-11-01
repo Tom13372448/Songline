@@ -344,6 +344,11 @@
       <div class="pack-grid" id="pack-grid">
         <p class="text-muted" style="grid-column:1/-1;text-align:center;padding:12px" data-i18n="source.loadingPacks">Lade Play-Pakete…</p>
       </div>
+      <div class="pack-link-bar">
+        <span class="pack-link-hint" data-i18n="links.hint">Play-Pakete starten nicht? Kopiere sie einmal in Spotify und verknüpfe sie hier.</span>
+        <button class="btn-secondary" id="btn-auto-link" onclick="autoLinkPacks()" data-i18n="links.auto">🔗 Kopien finden</button>
+        <button class="btn-secondary" onclick="openPackLinks()" data-i18n="links.manage">✎ Verknüpfungen</button>
+      </div>
     </div>
 
     <div id="source-playlist-wrap" class="input-group" style="display:none">
@@ -555,6 +560,16 @@
     <img id="qr-img" class="qr-img" alt="QR-Code zum Beitreten" data-i18n-alt="qr.alt">
     <div class="lobby-code" id="qr-code" style="margin-top:8px">----</div>
     <button class="btn-secondary" onclick="closeQr()" style="margin-top:12px" data-i18n="common.close">Schließen</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ PACK LINKS -->
+<div class="modal-overlay" id="links-modal" onclick="if(event.target===this)closePackLinks()">
+  <div class="modal-box links-box">
+    <div class="modal-title" data-i18n="links.title">Play-Pakete verknüpfen</div>
+    <p class="device-hint" data-i18n-html="links.explain">Spotify gibt Songs nur aus deinen eigenen Playlists frei. Öffne ein Paket in Spotify, markiere alle Songs → <b>Zur Playlist hinzufügen</b> → <b>Neue Playlist</b>, und wähle die Kopie hier aus.</p>
+    <div class="links-list" id="links-list"></div>
+    <button class="btn-secondary" onclick="closePackLinks()" style="margin-top:12px" data-i18n="common.close">Schließen</button>
   </div>
 </div>
 
