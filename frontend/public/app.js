@@ -266,7 +266,7 @@ on('game:verdict', ({ correct, gaveUp, track, currentPlayerName, stolenBy, token
   updateActionButtons();
   if (lobby.gameMode === 'classic') renderTimeline();
   showVerdict(correct, gaveUp, track, currentPlayerName, stolenBy, tokenEarned, reason);
-  Effects.sound(stolenBy ? 'songline' : correct ? 'correct' : 'wrong');
+  Effects.sound(stolenBy ? 'songline' : correct && !myFailedChallenge() ? 'correct' : 'wrong');
   if (correct && isMyTurn()) Effects.confetti(60);
 });
 
@@ -282,7 +282,10 @@ on('game:challenge', ({ lobby }) => {
   updateChallengeUI();
   if (!wasOpen && canChallenge() && navigator.vibrate) navigator.vibrate(80);
   if (!wasOpen) {
-    setTimeout(() => document.getElementById('challenge-panel').scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+    // phone: the panel sits in the bottom bar, so bring the placed slot into view instead
+    const target = isMobile() ? document.querySelector('.timeline-drop.placed') || document.getElementById('timeline-section')
+      : document.getElementById('challenge-panel');
+    setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: isMobile() ? 'center' : 'start' }), 150);
   }
   if (wasOpen && lobby.turn.challenges.length) Effects.sound('songline');
 });
@@ -1620,9 +1623,17 @@ function showVerdict(correct, gaveUp, track, currentPlayerName, stolenBy, tokenE
   if (stolenBy) {
     document.getElementById('verdict-icon').textContent = '📣';
     document.getElementById('verdict-title').textContent = 'SONGLINE!';
-    document.getElementById('verdict-title').className = 'verdict-title correct';
+    document.getElementById('verdict-title').className = `verdict-title ${isMyTurn() ? 'wrong' : 'correct'}`;
     document.getElementById('verdict-sub').textContent = L('v.stolen', { stealer: un(stolenBy), ...vp });
     document.getElementById('verdict-pts').textContent = L('v.stolenPts', { name: un(stolenBy) });
+  } else if (myFailedChallenge()) {
+    document.getElementById('verdict-icon').textContent = '💸';
+    document.getElementById('verdict-title').textContent = L('v.challengeLostTitle');
+    document.getElementById('verdict-title').className = 'verdict-title wrong';
+    document.getElementById('verdict-sub').textContent =
+      L(correct ? 'v.challengeLostRight' : 'v.challengeLostBoth', { name: un(currentPlayerName), ...vp });
+    document.getElementById('verdict-pts').textContent = '−1';
+    document.getElementById('verdict-pts-label').textContent = '🪙';
   } else if (gaveUp) {
     document.getElementById('verdict-icon').textContent = '🏳️';
     document.getElementById('verdict-title').textContent = L('v.gaveUpTitle');
@@ -1633,7 +1644,9 @@ function showVerdict(correct, gaveUp, track, currentPlayerName, stolenBy, tokenE
     document.getElementById('verdict-icon').textContent = '🎉';
     document.getElementById('verdict-title').textContent = L('v.correctTitle');
     document.getElementById('verdict-title').className = 'verdict-title correct';
-    document.getElementById('verdict-sub').textContent = L(gameMode === 'classic' ? 'v.correctClassic' : 'v.correctGuess', vp);
+    document.getElementById('verdict-sub').textContent = classic && !isMyTurn()
+      ? L('v.correctClassicOther', { name: un(currentPlayerName), ...vp })
+      : L(classic ? 'v.correctClassic' : 'v.correctGuess', vp);
     document.getElementById('verdict-pts').textContent = '+1';
   } else if (reason) {
     document.getElementById('verdict-icon').textContent = '😬';
@@ -1645,9 +1658,17 @@ function showVerdict(correct, gaveUp, track, currentPlayerName, stolenBy, tokenE
     document.getElementById('verdict-icon').textContent = '💔';
     document.getElementById('verdict-title').textContent = L('v.wrongTitle');
     document.getElementById('verdict-title').className = 'verdict-title wrong';
-    document.getElementById('verdict-sub').textContent = L(gameMode === 'classic' ? 'v.wrongClassic' : 'v.wrongGuess', vp);
+    document.getElementById('verdict-sub').textContent = classic && !isMyTurn()
+      ? L('v.wrongClassicOther', { name: un(currentPlayerName), ...vp })
+      : L(classic ? 'v.wrongClassic' : 'v.wrongGuess', vp);
     document.getElementById('verdict-pts').textContent = '±0';
   }
+}
+
+// My unit called SONGLINE! this turn and didn't get the card (token is gone)
+function myFailedChallenge() {
+  const self = myUnit();
+  return !!self && !!state.lobby?.turn?.challenges?.some(c => c.unitId === self.id);
 }
 
 function hideVerdict() {
